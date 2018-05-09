@@ -1,7 +1,6 @@
 package foryou.core.annotation;
 
 import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -15,7 +14,7 @@ import java.lang.annotation.Target;
  */
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Target({java.lang.annotation.ElementType.TYPE, java.lang.annotation.ElementType.FIELD} )
 @Documented
 public @interface IgnoreField {
 	public String fieldNames();
