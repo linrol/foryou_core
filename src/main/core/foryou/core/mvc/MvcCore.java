@@ -10,6 +10,7 @@ import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.ParseException;
@@ -158,6 +159,9 @@ public class MvcCore {
 	private static Map<String, Field> getControllerFieldMap(Map<String, Field> fieldMap, Class<?> targetClass, List<String> rootFieldNameList, StringBuilder fieldNames) {
 		Field[] fields = concat(targetClass.getFields(), targetClass.getDeclaredFields());
 		for (Field field : fields) {
+			if(Modifier.isFinal(field.getModifiers()) || Modifier.isStatic(field.getModifiers())){
+				continue;
+			}
 			if (field.getType().getClassLoader() != null) {
 				rootFieldNameList.add(field.getName());
 				getControllerFieldMap(fieldMap, field.getType(), rootFieldNameList, fieldNames);
@@ -177,6 +181,7 @@ public class MvcCore {
 		rootFieldNameList.clear();
 		return fieldMap;
 	}
+	
 
 	/*public static List<String> getParamterName(Class<?> clazz, String methodName) {
 		LocalVariableTableParameterNameDiscoverer u = newLocalVariableTableParameterNameDiscoverer();
