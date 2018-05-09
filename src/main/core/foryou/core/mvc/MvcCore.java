@@ -32,6 +32,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import foryou.core.annotation.ClassMapingUrl;
+import foryou.core.annotation.IgnoreField;
 import foryou.core.annotation.InterceptorByClass;
 import foryou.core.annotation.SynchronizedLock;
 import foryou.core.base.BaseController;
@@ -157,9 +158,14 @@ public class MvcCore {
 	 * @return
 	 */
 	private static Map<String, Field> getControllerFieldMap(Map<String, Field> fieldMap, Class<?> targetClass, List<String> rootFieldNameList, StringBuilder fieldNames) {
-		Field[] fields = concat(targetClass.getFields(), targetClass.getDeclaredFields());
+		List<Field> fields = concat(targetClass.getFields(), targetClass.getDeclaredFields());
+		if (targetClass.isAnnotationPresent(IgnoreField.class)) {
+			IgnoreField ignoreFields = targetClass.getAnnotation(IgnoreField.class);
+			Arrays.asList(ignoreFields.fieldNames());
+			fields.removeAll(Arrays.asList(ignoreFields.fieldNames().split(",")));
+		}
 		for (Field field : fields) {
-			if(Modifier.isFinal(field.getModifiers()) || Modifier.isStatic(field.getModifiers())){
+			if(Modifier.isFinal(field.getModifiers()) || Modifier.isStatic(field.getModifiers()) || field.isAnnotationPresent(IgnoreField.class)){
 				continue;
 			}
 			if (field.getType().getClassLoader() != null) {
@@ -208,12 +214,14 @@ public class MvcCore {
 	 * @param second
 	 * @return
 	 */
-	private static <T> T[] concat(T[] first, T[] second) {
-		T[] result = Arrays.copyOf(first, first.length + second.length);
-		Set<T> set = new HashSet<T>(Arrays.asList(first));
-		set.addAll(new HashSet<T>(Arrays.asList(second)));
-		set.toArray(result);
-		return Arrays.copyOf(result, set.size());
+	private static <T> List<T> concat(T[] first, T[] second) {
+		List<T> list = new ArrayList<T>(first.length + second.length);
+		list.addAll(Arrays.asList(first));
+		list.addAll(Arrays.asList(second));
+		Set<T> h = new HashSet<T>(list);
+        list.clear();
+        list.addAll(h);
+        return list;
 	}
 
 	/**
@@ -367,7 +375,7 @@ public class MvcCore {
 				continue;
 			}
 			Object obj = parameterType.getValue().newInstance();
-			Field[] fields = concat(parameterType.getValue().getFields(), parameterType.getValue().getDeclaredFields());
+			List<Field> fields = concat(parameterType.getValue().getFields(), parameterType.getValue().getDeclaredFields());
 			for (Field field : fields) {
 				if (paramterMap.get(parameterType.getKey() + "." + field.getName()) == null) {
 					continue;
