@@ -17,5 +17,5 @@ import java.lang.annotation.Target;
 @Target({java.lang.annotation.ElementType.TYPE, java.lang.annotation.ElementType.FIELD} )
 @Documented
 public @interface IgnoreField {
-	public String fieldNames();
+	public String fieldNames() default "";
 }
