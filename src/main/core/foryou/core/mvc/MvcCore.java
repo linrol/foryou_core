@@ -159,13 +159,13 @@ public class MvcCore {
 	 */
 	private static Map<String, Field> getControllerFieldMap(Map<String, Field> fieldMap, Class<?> targetClass, List<String> rootFieldNameList, StringBuilder fieldNames) {
 		List<Field> fields = concat(targetClass.getFields(), targetClass.getDeclaredFields());
+		String ignoreFieldNames = "";
 		if (targetClass.isAnnotationPresent(IgnoreField.class)) {
 			IgnoreField ignoreFields = targetClass.getAnnotation(IgnoreField.class);
-			Arrays.asList(ignoreFields.fieldNames());
-			fields.removeAll(Arrays.asList(ignoreFields.fieldNames().split(",")));
+			ignoreFieldNames = ignoreFields.fieldNames();
 		}
 		for (Field field : fields) {
-			if(Modifier.isFinal(field.getModifiers()) || Modifier.isStatic(field.getModifiers()) || field.isAnnotationPresent(IgnoreField.class)){
+			if(Modifier.isFinal(field.getModifiers()) || Modifier.isStatic(field.getModifiers()) || field.isAnnotationPresent(IgnoreField.class) || ignoreFieldNames.contains(field.getName())){
 				continue;
 			}
 			if (field.getType().getClassLoader() != null) {
