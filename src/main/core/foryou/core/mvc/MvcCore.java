@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,8 +61,7 @@ public class MvcCore {
 
 	public static void initMvc(File folder, String packageName, String[] scanPackages) {
 		File[] files = folder.listFiles();
-		for (int fileIndex = 0; fileIndex < files.length; fileIndex++) {
-			File file = files[fileIndex];
+		for (File file:files) {
 			String fileName = file.getName();
 			if (file.isDirectory()) {
 				initMvc(file, packageName + fileName + ".", scanPackages);
@@ -368,8 +368,10 @@ public class MvcCore {
 		}
 		Object[] objects = new Object[parameterTypeMap.size()];
 		Integer i = 0;
-		for (Map.Entry<String, Class<?>> parameterType : parameterTypeMap.entrySet()) {
-			if (isBaseDataType(parameterType.getValue())) {
+		Iterator<Map.Entry<String, Class<?>>> entryIterator = parameterTypeMap.entrySet().iterator();
+        while (entryIterator.hasNext()) {
+            Map.Entry<String, Class<?>> parameterType = entryIterator.next();
+            if (isBaseDataType(parameterType.getValue())) {
 				// 基础数据类
 				objects[i++] = paramterMap.get(parameterType.getKey()) == null ? getDefaultValue(parameterType.getValue()) : convertParameter(paramterMap.get(parameterType.getKey()), parameterType.getValue());
 				continue;
@@ -386,7 +388,7 @@ public class MvcCore {
 				field.set(obj, convertParameter(paramterMap.get(parameterType.getKey() + "." + field.getName()), field.getType()));
 			}
 			objects[i++] = obj;
-		}
+        }
 		return objects;
 	}
 
@@ -428,10 +430,21 @@ public class MvcCore {
 		return null;
 	}
 
+	/**
+	 * 判断是否为基础类型数据
+	 * @param clazz
+	 * @return
+	 * @throws Exception
+	 */
 	private static boolean isBaseDataType(Class<?> clazz) throws Exception {
 		return (clazz.equals(String.class) || clazz.equals(Integer.class) || clazz.equals(Byte.class) || clazz.equals(Long.class) || clazz.equals(Double.class) || clazz.equals(Float.class) || clazz.equals(Character.class) || clazz.equals(Short.class) || clazz.equals(BigDecimal.class) || clazz.equals(BigInteger.class) || clazz.equals(Boolean.class) || clazz.equals(Date.class) || clazz.isPrimitive());
 	}
 
+	/**
+	 * 获取基础数据类型默认值
+	 * @param clazz
+	 * @return
+	 */
 	private static Object getDefaultValue(Class<?> clazz) {
 		switch (clazz.toString()) {
 		case "int":
