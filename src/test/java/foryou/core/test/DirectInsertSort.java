@@ -13,8 +13,5 @@ public class DirectInsertSort {
         {
             System.out.print(a[i] + " ");
         }
-        for(int i:a){
-        	
-        }
 	}
 }
