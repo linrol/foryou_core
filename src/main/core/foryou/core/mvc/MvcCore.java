@@ -29,6 +29,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -61,7 +63,7 @@ public class MvcCore {
 
 	public static void initMvc(File folder, String packageName, String[] scanPackages) {
 		File[] files = folder.listFiles();
-		for (File file:files) {
+		for (File file : files) {
 			String fileName = file.getName();
 			if (file.isDirectory()) {
 				initMvc(file, packageName + fileName + ".", scanPackages);
@@ -122,11 +124,7 @@ public class MvcCore {
 			ControllerMethod controllerMethod = new ControllerMethod();
 			controllerMethod.setMethod(method);
 			controllerMethod.setMethodSynchronized(method.isAnnotationPresent(SynchronizedLock.class));
-			/*
-			 * if(JdkVersion.isJava8()){
-			 * controllerMethod.setParameterTypeMap(getParameterTypeMap(method))
-			 * ; }
-			 */
+			controllerMethod.setParameterTypeMap(getMethodParamterTypeMap(method));
 			methodMap.put(method.getName(), controllerMethod);
 		}
 		controllerPrototype.setMethodMap(methodMap);
@@ -165,7 +163,7 @@ public class MvcCore {
 			ignoreFieldNames = ignoreFields.fieldNames();
 		}
 		for (Field field : fields) {
-			if(Modifier.isFinal(field.getModifiers()) || Modifier.isStatic(field.getModifiers()) || field.isAnnotationPresent(IgnoreField.class) || ignoreFieldNames.contains(field.getName())){
+			if (Modifier.isFinal(field.getModifiers()) || Modifier.isStatic(field.getModifiers()) || field.isAnnotationPresent(IgnoreField.class) || ignoreFieldNames.contains(field.getName())) {
 				continue;
 			}
 			if (field.getType().getClassLoader() != null) {
@@ -188,24 +186,23 @@ public class MvcCore {
 		return fieldMap;
 	}
 	
-
-	/*public static List<String> getParamterName(Class<?> clazz, String methodName) {
-		LocalVariableTableParameterNameDiscoverer u = newLocalVariableTableParameterNameDiscoverer();
-		Method[] methods = clazz.getDeclaredMethods();
-		for (Method method : methods) {
-			if (methodName.equals(method.getName())) {
-				String[] params = u.getParameterNames(method);
-				return Arrays.asList(params);
-			}
+	/**
+	 * 获取方法上的参数名称
+	 * 
+	 * @param clazz
+	 * @param methodName
+	 * @return
+	 */
+	public static Map<String, Class<?>> getMethodParamterTypeMap(Method method) {
+		Map<String, Class<?>> paramterTypeMap = new ConcurrentHashMap<String, Class<?>>();
+		LocalVariableTableParameterNameDiscoverer localVariableTableParameterNameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
+		String[] paramterNames = localVariableTableParameterNameDiscoverer.getParameterNames(method);
+		Class<?>[] paramterTypes = method.getParameterTypes();
+		for(int i = 0;i<paramterNames.length;i++){
+			paramterTypeMap.put(paramterNames[i], paramterTypes[i]);
 		}
-		return null;
+		return paramterTypeMap;
 	}
-
-	public static void main(String[] args) {
-		for (String str : getParamterName(MvcCore.class, "putControllerPrototypeMap")) {
-			System.out.println(str + "..........");
-		}
-	}*/
 
 	/**
 	 * 数组链接并去重操作
@@ -219,9 +216,9 @@ public class MvcCore {
 		list.addAll(Arrays.asList(first));
 		list.addAll(Arrays.asList(second));
 		Set<T> h = new HashSet<T>(list);
-        list.clear();
-        list.addAll(h);
-        return list;
+		list.clear();
+		list.addAll(h);
+		return list;
 	}
 
 	/**
@@ -326,25 +323,21 @@ public class MvcCore {
 	 * @throws SecurityException
 	 * @throws IllegalArgumentException
 	 */
-	public static String invokeMethod(Object obAction, ControllerMethod controllerMethod, Map<String, String[]> paramterMap) throws IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException {
+	public static String invokeMethod(Object obAction, ControllerMethod controllerMethod, Map<String, String[]> httpRequestMap) throws IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException {
 		BaseController controller = (BaseController) obAction;
 		try {
-			/*
-			 * if (controllerMethod.getMethodSynchronized()) { synchronized
-			 * (BaseController.class) { return (String)
-			 * controllerMethod.getMethod().invoke(controller,
-			 * getMethodInvokeParameters(paramterMap,
-			 * controllerMethod.getParameterTypeMap())); } } return (String)
-			 * controllerMethod.getMethod().invoke(controller,
-			 * getMethodInvokeParameters(paramterMap,
-			 * controllerMethod.getParameterTypeMap()));
-			 */
 			if (controllerMethod.getMethodSynchronized()) {
+				synchronized (BaseController.class) {
+					return (String) controllerMethod.getMethod().invoke(controller, getMethodInvokeParameters(httpRequestMap, controllerMethod.getParameterTypeMap()));
+				}
+			}
+			return (String) controllerMethod.getMethod().invoke(controller, getMethodInvokeParameters(httpRequestMap, controllerMethod.getParameterTypeMap()));
+			/*if (controllerMethod.getMethodSynchronized()) {
 				synchronized (BaseController.class) {
 					return (String) controllerMethod.getMethod().invoke(controller);
 				}
 			}
-			return (String) controllerMethod.getMethod().invoke(controller);
+			return (String) controllerMethod.getMethod().invoke(controller);*/
 		} catch (InvocationTargetException e) {
 			e.getTargetException().printStackTrace();
 			return getExceptionAllinformation(e);
@@ -369,9 +362,9 @@ public class MvcCore {
 		Object[] objects = new Object[parameterTypeMap.size()];
 		Integer i = 0;
 		Iterator<Map.Entry<String, Class<?>>> entryIterator = parameterTypeMap.entrySet().iterator();
-        while (entryIterator.hasNext()) {
-            Map.Entry<String, Class<?>> parameterType = entryIterator.next();
-            if (isBaseDataType(parameterType.getValue())) {
+		while (entryIterator.hasNext()) {
+			Map.Entry<String, Class<?>> parameterType = entryIterator.next();
+			if (isBaseDataType(parameterType.getValue())) {
 				// 基础数据类
 				objects[i++] = paramterMap.get(parameterType.getKey()) == null ? getDefaultValue(parameterType.getValue()) : convertParameter(paramterMap.get(parameterType.getKey()), parameterType.getValue());
 				continue;
@@ -388,7 +381,7 @@ public class MvcCore {
 				field.set(obj, convertParameter(paramterMap.get(parameterType.getKey() + "." + field.getName()), field.getType()));
 			}
 			objects[i++] = obj;
-        }
+		}
 		return objects;
 	}
 
@@ -432,6 +425,7 @@ public class MvcCore {
 
 	/**
 	 * 判断是否为基础类型数据
+	 * 
 	 * @param clazz
 	 * @return
 	 * @throws Exception
@@ -442,6 +436,7 @@ public class MvcCore {
 
 	/**
 	 * 获取基础数据类型默认值
+	 * 
 	 * @param clazz
 	 * @return
 	 */
