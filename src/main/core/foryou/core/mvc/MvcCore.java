@@ -195,9 +195,12 @@ public class MvcCore {
 	 */
 	public static Map<String, Class<?>> getMethodParamterTypeMap(Method method) {
 		Map<String, Class<?>> paramterTypeMap = new ConcurrentHashMap<String, Class<?>>();
+		Class<?>[] paramterTypes = method.getParameterTypes();
+		if(paramterTypes == null || paramterTypes.length < 1) {
+			return paramterTypeMap;
+		}
 		LocalVariableTableParameterNameDiscoverer localVariableTableParameterNameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 		String[] paramterNames = localVariableTableParameterNameDiscoverer.getParameterNames(method);
-		Class<?>[] paramterTypes = method.getParameterTypes();
 		for(int i = 0;i<paramterNames.length;i++){
 			paramterTypeMap.put(paramterNames[i], paramterTypes[i]);
 		}
@@ -328,16 +331,10 @@ public class MvcCore {
 		try {
 			if (controllerMethod.getMethodSynchronized()) {
 				synchronized (BaseController.class) {
-					return (String) controllerMethod.getMethod().invoke(controller, getMethodInvokeParameters(httpRequestMap, controllerMethod.getParameterTypeMap()));
+					return controllerMethod.getParameterTypeMap().size() < 1 ? (String) controllerMethod.getMethod().invoke(controller):(String) controllerMethod.getMethod().invoke(controller, getMethodInvokeParameters(httpRequestMap, controllerMethod.getParameterTypeMap()));
 				}
 			}
-			return (String) controllerMethod.getMethod().invoke(controller, getMethodInvokeParameters(httpRequestMap, controllerMethod.getParameterTypeMap()));
-			/*if (controllerMethod.getMethodSynchronized()) {
-				synchronized (BaseController.class) {
-					return (String) controllerMethod.getMethod().invoke(controller);
-				}
-			}
-			return (String) controllerMethod.getMethod().invoke(controller);*/
+			return controllerMethod.getParameterTypeMap().size() < 1 ? (String) controllerMethod.getMethod().invoke(controller):(String) controllerMethod.getMethod().invoke(controller, getMethodInvokeParameters(httpRequestMap, controllerMethod.getParameterTypeMap()));
 		} catch (InvocationTargetException e) {
 			e.getTargetException().printStackTrace();
 			return getExceptionAllinformation(e);
