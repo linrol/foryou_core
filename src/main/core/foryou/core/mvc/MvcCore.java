@@ -18,12 +18,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -56,8 +56,8 @@ public class MvcCore {
 	public static String GSON_SERIALIZE_NULL_KEY = "gson-serializeNulls";
 	public static String GSON_SERIALIZE_NULL_KEY_VALUE = getMvcProperties(GSON_SERIALIZE_NULL_KEY);
 
-	public static Map<String, ControllerPrototype> controllerPrototypeMap = new HashMap<String, ControllerPrototype>();
-	public static Map<String, Object> ControllerFieldRefMap = new HashMap<String, Object>();
+	public static Map<String, ControllerPrototype> controllerPrototypeMap = new ConcurrentHashMap<String, ControllerPrototype>();
+	public static Map<String, Object> ControllerFieldRefMap = new ConcurrentHashMap<String, Object>();
 
 	public static void initMvc(File folder, String packageName, String[] scanPackages) {
 		File[] files = folder.listFiles();
@@ -114,10 +114,10 @@ public class MvcCore {
 		controllerPrototype.setControllerClassPath(classPath);
 		System.out.println("Create Controller Url Mapping[" + classPath + "]...");
 		StringBuilder fieldNames = new StringBuilder("[");
-		controllerPrototype.setFieldMap(getControllerFieldMap(new HashMap<String, Field>(), targetClass, new ArrayList<String>(), fieldNames));
+		controllerPrototype.setFieldMap(getControllerFieldMap(new ConcurrentHashMap<String, Field>(), targetClass, new ArrayList<String>(), fieldNames));
 		System.out.println("Create Controller Field Import" + fieldNames.toString() + "]...");
 		Method[] methods = targetClass.getMethods();
-		Map<String, ControllerMethod> methodMap = new HashMap<String, ControllerMethod>();
+		Map<String, ControllerMethod> methodMap = new ConcurrentHashMap<String, ControllerMethod>();
 		for (Method method : methods) {
 			ControllerMethod controllerMethod = new ControllerMethod();
 			controllerMethod.setMethod(method);
