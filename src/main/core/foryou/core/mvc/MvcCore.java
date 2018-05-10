@@ -195,12 +195,12 @@ public class MvcCore {
 	 */
 	public static Map<String, Class<?>> getMethodParamterTypeMap(Method method) {
 		Map<String, Class<?>> paramterTypeMap = new ConcurrentHashMap<String, Class<?>>();
-		Class<?>[] paramterTypes = method.getParameterTypes();
-		if(paramterTypes == null || paramterTypes.length < 1) {
-			return paramterTypeMap;
-		}
 		LocalVariableTableParameterNameDiscoverer localVariableTableParameterNameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 		String[] paramterNames = localVariableTableParameterNameDiscoverer.getParameterNames(method);
+		Class<?>[] paramterTypes = method.getParameterTypes();
+		if(paramterNames == null || paramterTypes == null || paramterNames.length < 1 || paramterTypes.length < 1) {
+			return paramterTypeMap;
+		}
 		for(int i = 0;i<paramterNames.length;i++){
 			paramterTypeMap.put(paramterNames[i], paramterTypes[i]);
 		}
