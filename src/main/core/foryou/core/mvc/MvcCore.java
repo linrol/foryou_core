@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -194,7 +195,7 @@ public class MvcCore {
 	 * @return
 	 */
 	public static Map<String, Class<?>> getMethodParamterTypeMap(Method method) {
-		Map<String, Class<?>> paramterTypeMap = new ConcurrentHashMap<String, Class<?>>();
+		Map<String, Class<?>> paramterTypeMap = new LinkedHashMap<String, Class<?>>();
 		LocalVariableTableParameterNameDiscoverer localVariableTableParameterNameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 		String[] paramterNames = localVariableTableParameterNameDiscoverer.getParameterNames(method);
 		Class<?>[] paramterTypes = method.getParameterTypes();
