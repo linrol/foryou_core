@@ -1,1 +1,1 @@
-mvn deploy -P sonatype-oss-release -Darguments="gpg.passphrase=!*Linrol19941208"
+上传构建部署到OSS中:mvn clean deploy -P sonatype-oss-release -Darguments="gpg.passphrase=!*Linrol19941208"
