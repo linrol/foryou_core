@@ -1,1 +1,3 @@
-上传构建部署到OSS中:mvn clean deploy -P sonatype-oss-release -Darguments="gpg.passphrase=!*Linrol19941208"
+上传构建部署到OSS中:
+自己部署的pom文件：mvn clean deploy -P release
+依赖的parent pom 文件：mvn clean deploy -P sonatype-oss-release -Darguments="gpg.passphrase=!*Linrol19941208"
