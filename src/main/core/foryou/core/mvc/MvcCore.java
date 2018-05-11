@@ -567,11 +567,11 @@ public class MvcCore {
 		String ip = request.getHeader("X-Real-IP");
 		ip = (ip == null || ip.equals("")) ? request.getRemoteAddr() : ip;
 		Object controller = Class.forName(controllerPrototype.getControllerClassPath()).newInstance();
-		((BaseController) controller).request = request;
-		((BaseController) controller).response = response;
-		((BaseController) controller).session = request.getSession();
-		((BaseController) controller).servletContext = request.getSession().getServletContext();
-		((BaseController) controller).ip = ip;
+		((BaseController) controller).requestThread.set(request);
+		((BaseController) controller).responseThread.set(response);
+		((BaseController) controller).sessionThread.set(request.getSession());
+		((BaseController) controller).servletContextThread.set(request.getSession().getServletContext());
+		((BaseController) controller).ipThread.set(ip);
 		MvcCore.controllerFieldInject(controller, controllerPrototype.getFieldMap(), request.getParameterMap());
 		return controller;
 	}
@@ -595,15 +595,15 @@ public class MvcCore {
 		Boolean isAsyncRequest = "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
 		BaseController baseController = (BaseController) controller;
 		if (BaseController.RESULT_AJAX_DATA.equals(result)) {
-			response.getWriter().write(gson.toJson(baseController.ajaxData));
+			response.getWriter().write(gson.toJson(baseController.ajaxData.get()));
 		} else if (BaseController.RESULT_AJAX_BOOLEAN.equals(result)) {
-			response.getWriter().write(gson.toJson(baseController.ajaxBoolean));
+			response.getWriter().write(gson.toJson(baseController.ajaxBoolean.get()));
 		} else if (BaseController.RESULT_AJAX_STREAM.equals(result)) {
-			response.getOutputStream().write(baseController.ajaxData.getByteData());
+			response.getOutputStream().write(baseController.ajaxData.get().getByteData());
 		} else if (BaseController.RESULT_REDIRECT.equals(result) && (!isAsyncRequest)) {
-			response.sendRedirect(baseController.redirectData.getRedirectUrl());
+			response.sendRedirect(baseController.redirectData.get().getRedirectUrl());
 		} else if (BaseController.RESULT_REDIRECT.equals(result) && isAsyncRequest) {
-			response.getWriter().write(gson.toJson(baseController.redirectData));
+			response.getWriter().write(gson.toJson(baseController.redirectData.get()));
 		} else {
 			response.getWriter().write(result);
 		}

@@ -1,7 +1,6 @@
 package foryou.core.base;
 
 import java.io.FileInputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -11,7 +10,6 @@ import javax.servlet.http.HttpSession;
 
 import foryou.core.common.AjaxBoolean;
 import foryou.core.common.AjaxData;
-import foryou.core.common.Paginate;
 import foryou.core.common.RedirectData;
 
 /**
@@ -47,24 +45,17 @@ public class BaseController {
 	/**
 	 * 返回的Json数据类型格式
 	 */
-	public AjaxData ajaxData = new AjaxData();
-	public AjaxBoolean ajaxBoolean = new AjaxBoolean();
-	public RedirectData redirectData = new RedirectData();
+	public ThreadLocal<AjaxData> ajaxData = new ThreadLocal<AjaxData>();
+	public ThreadLocal<AjaxBoolean> ajaxBoolean = new ThreadLocal<AjaxBoolean>();
+	public ThreadLocal<RedirectData> redirectData = new ThreadLocal<RedirectData>();
 	
-	public ServletContext servletContext;
-	public HttpServletRequest request;
-	public HttpServletResponse response;
-	public HttpSession session;
-	public String ip;
-
-	/**
-	 * 分页组件
-	 */
-	public Paginate paginate = new Paginate();
-	public FileInputStream fileInputStream;
-
-	protected String searchKeyValue = "";
-	protected String searchKey = "";
+	public ThreadLocal<ServletContext> servletContextThread = new ThreadLocal<ServletContext>();
+	public ThreadLocal<HttpServletRequest> requestThread = new ThreadLocal<HttpServletRequest>();
+	public ThreadLocal<HttpServletResponse> responseThread = new ThreadLocal<HttpServletResponse>();
+	public ThreadLocal<HttpSession> sessionThread = new ThreadLocal<HttpSession>();
+	public ThreadLocal<String> ipThread = new ThreadLocal<String>();
+	
+	public ThreadLocal<FileInputStream> fileInputStream;
 
 	/**
 	 * ajax Data值存入，有翻页
@@ -72,40 +63,10 @@ public class BaseController {
 	 * @param list
 	 */
 	public void setAjaxData(List<?> list) {
-		List<Object> paginData = new ArrayList<Object>();
-		for (int i = paginate.getStart(); i < paginate.getStart() + paginate.getLimit(); i++) {
-			try {
-				paginData.add(list.get(i));
-			} catch (Exception e) {
-				break;
-			}
-		}
-		ajaxData.setTotalProperty(list.size());
-		ajaxData.setData(paginData);
-	}
-
-	/**
-	 * ajax Data值存入，是否需要翻页
-	 * 
-	 * @param list
-	 * @param page
-	 *            是否需要翻页
-	 */
-	public void setAjaxData(List<?> list, boolean page) {
-		List<Object> paginData = new ArrayList<Object>();
-		if (page) {
-			for (int i = paginate.getStart(); i < paginate.getStart() + paginate.getLimit(); i++) {
-				try {
-					paginData.add(list.get(i));
-				} catch (Exception e) {
-					break;
-				}
-			}
-			ajaxData.setData(paginData);
-		} else {
-			ajaxData.setData(list);
-		}
-		ajaxData.setTotalProperty(list.size());
+		AjaxData data = new AjaxData();
+		data.setTotalProperty(list.size());
+		data.setData(list);
+		ajaxData.set(data);
 	}
 
 	/**
@@ -115,8 +76,10 @@ public class BaseController {
 	 * @param totalCount
 	 */
 	public void setAjaxData(List<?> list, long totalCount) {
-		ajaxData.setData(list);
-		ajaxData.setTotalProperty(totalCount);
+		AjaxData data = new AjaxData();
+		data.setData(list);
+		data.setTotalProperty(totalCount);
+		ajaxData.set(data);
 	}
 
 	/**
@@ -125,7 +88,9 @@ public class BaseController {
 	 * @param success
 	 */
 	public void setAjaxBoolean(Boolean success) {
-		ajaxBoolean.setSuccess(success);
+		AjaxBoolean ajaxBooleandata = new AjaxBoolean();
+		ajaxBooleandata.setSuccess(success);
+		ajaxBoolean.set(ajaxBooleandata);
 	}
 
 	/**
@@ -135,8 +100,10 @@ public class BaseController {
 	 * @param data
 	 */
 	public void setAjaxBoolean(Boolean success, Object data) {
-		ajaxBoolean.setSuccess(success);
-		ajaxBoolean.setData(data);
+		AjaxBoolean ajaxBooleandata = new AjaxBoolean();
+		ajaxBooleandata.setSuccess(success);
+		ajaxBooleandata.setData(data);
+		ajaxBoolean.set(ajaxBooleandata);
 	}
 
 	/**
@@ -146,8 +113,10 @@ public class BaseController {
 	 * @param msg
 	 */
 	public void setAjaxBoolean(Boolean success, String msg) {
-		ajaxBoolean.setSuccess(success);
-		ajaxBoolean.setMsg(msg);
+		AjaxBoolean ajaxBooleandata = new AjaxBoolean();
+		ajaxBooleandata.setSuccess(success);
+		ajaxBooleandata.setMsg(msg);
+		ajaxBoolean.set(ajaxBooleandata);
 	}
 
 	/**
@@ -158,9 +127,11 @@ public class BaseController {
 	 * @param data
 	 */
 	public void setAjaxBoolean(Boolean success, String msg, Object data) {
-		ajaxBoolean.setSuccess(success);
-		ajaxBoolean.setMsg(msg);
-		ajaxBoolean.setData(data);
+		AjaxBoolean ajaxBooleandata = new AjaxBoolean();
+		ajaxBooleandata.setSuccess(success);
+		ajaxBooleandata.setMsg(msg);
+		ajaxBooleandata.setData(data);
+		ajaxBoolean.set(ajaxBooleandata);
 	}
 
 	/**
@@ -169,7 +140,9 @@ public class BaseController {
 	 * @param redirectUrl
 	 */
 	public void setRedirectData(String redirectUrl){
-		redirectData.setRedirectUrl(redirectUrl);
+		RedirectData redirect = new RedirectData();
+		redirect.setRedirectUrl(redirectUrl);
+		redirectData.set(redirect);
 	}
 	
 }
