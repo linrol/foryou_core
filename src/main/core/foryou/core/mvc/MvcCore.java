@@ -567,11 +567,11 @@ public class MvcCore {
 		String ip = request.getHeader("X-Real-IP");
 		ip = (ip == null || ip.equals("")) ? request.getRemoteAddr() : ip;
 		Object controller = Class.forName(controllerPrototype.getControllerClassPath()).newInstance();
-		((BaseController) controller).request = request;
-		((BaseController) controller).response = response;
-		((BaseController) controller).session = request.getSession();
-		((BaseController) controller).servletContext = request.getSession().getServletContext();
-		((BaseController) controller).ip = ip;
+		((BaseController) controller).request = (request);
+		((BaseController) controller).response = (response);
+		((BaseController) controller).session = (request.getSession());
+		((BaseController) controller).servletContext = (request.getSession().getServletContext());
+		((BaseController) controller).ip = (ip);
 		MvcCore.controllerFieldInject(controller, controllerPrototype.getFieldMap(), request.getParameterMap());
 		return controller;
 	}
