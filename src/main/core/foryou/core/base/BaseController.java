@@ -21,9 +21,6 @@ import foryou.core.common.RedirectData;
 public class BaseController {
 
 	/**
-	 * ajax异步请求返回结果集
-	 */
-	/**
 	 * ajax list结果集返回
 	 */
 	public static final String RESULT_AJAX_DATA = "ajax_data";
@@ -69,7 +66,7 @@ public class BaseController {
 	/**
 	 * ajax Data值存入，有翻页
 	 * 
-	 * @param list
+	 * @param list 入参
 	 */
 	public void setAjaxData(List<?> list) {
 		List<Object> paginData = new ArrayList<Object>();
@@ -87,9 +84,8 @@ public class BaseController {
 	/**
 	 * ajax Data值存入，是否需要翻页
 	 * 
-	 * @param list
-	 * @param page
-	 *            是否需要翻页
+	 * @param list 入参
+	 * @param page 是否需要翻页
 	 */
 	public void setAjaxData(List<?> list, boolean page) {
 		List<Object> paginData = new ArrayList<Object>();
@@ -111,8 +107,8 @@ public class BaseController {
 	/**
 	 * ajax Data值存入，设置总记录数
 	 * 
-	 * @param list
-	 * @param totalCount
+	 * @param list 入参
+	 * @param totalCount 总数量
 	 */
 	public void setAjaxData(List<?> list, long totalCount) {
 		ajaxData.setData(list);
@@ -122,7 +118,7 @@ public class BaseController {
 	/**
 	 * ajax Boolean值存入
 	 * 
-	 * @param success
+	 * @param success 是否成功
 	 */
 	public void setAjaxBoolean(Boolean success) {
 		ajaxBoolean.setSuccess(success);
@@ -131,8 +127,8 @@ public class BaseController {
 	/**
 	 * ajax Boolean值存入
 	 * 
-	 * @param success
-	 * @param data
+	 * @param success 是否成功
+	 * @param data 数据
 	 */
 	public void setAjaxBoolean(Boolean success, Object data) {
 		ajaxBoolean.setSuccess(success);
@@ -142,8 +138,8 @@ public class BaseController {
 	/**
 	 * ajax Boolean值存入
 	 * 
-	 * @param success
-	 * @param msg
+	 * @param success 是否成功
+	 * @param msg 提示消息
 	 */
 	public void setAjaxBoolean(Boolean success, String msg) {
 		ajaxBoolean.setSuccess(success);
@@ -153,9 +149,9 @@ public class BaseController {
 	/**
 	 * ajax Boolean值存入
 	 * 
-	 * @param success
-	 * @param msg
-	 * @param data
+	 * @param success 是否成功
+	 * @param msg 提示小时
+	 * @param data 数据
 	 */
 	public void setAjaxBoolean(Boolean success, String msg, Object data) {
 		ajaxBoolean.setSuccess(success);
@@ -164,9 +160,8 @@ public class BaseController {
 	}
 
 	/**
-	 * 重定向结果集注入
-	 * @param redirectType
-	 * @param redirectUrl
+	 * 重定向结果集
+	 * @param redirectUrl 跳转url
 	 */
 	public void setRedirectData(String redirectUrl){
 		redirectData.setRedirectUrl(redirectUrl);

@@ -8,10 +8,9 @@ import java.lang.annotation.Target;
 
 /**
  * 描述class所在url位置,定义Action时注解此Annotation即可实现前端到Action的访问
- * 
- * @author luolin
+ * @author 罗林
+ *
  */
-
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented

@@ -8,8 +8,7 @@ import java.lang.annotation.Target;
 
 /**
  * 指定名字的拦截器
- * 
- * @author Administrator
+ * @author 罗林
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

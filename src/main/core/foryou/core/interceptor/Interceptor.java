@@ -11,19 +11,19 @@ public interface Interceptor {
 
 	/**
 	 * 请求前调用
-	 * @param request
-	 * @param response
+	 * @param request request
+	 * @param response response
 	 * @return true继续调用业务逻辑，false终结请求返回response
-	 * @throws Exception
+	 * @throws Exception 异常信息
 	 */
 	public Boolean beforeInvoke(HttpServletRequest request, HttpServletResponse response) throws Exception;
 
 	/**
 	 * 请求后调用
-	 * @param request
-	 * @param response
+	 * @param request request
+	 * @param response response
 	 * @return true继续调用业务逻辑，false终结请求返回response
-	 * @throws Exception
+	 * @throws Exception 异常信息
 	 */
 	public Boolean afterInvoke(HttpServletRequest request, HttpServletResponse response) throws Exception;
 

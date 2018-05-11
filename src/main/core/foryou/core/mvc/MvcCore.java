@@ -100,10 +100,9 @@ public class MvcCore {
 	/**
 	 * 获取Controller的原型信息，缓存到Map中
 	 * 
-	 * @param controllerName
-	 * @param classPath
-	 * @param targetClass
-	 * @throws NotFoundException
+	 * @param controllerName 控制器名称
+	 * @param classPath 类路径
+	 * @param targetClass targetClass
 	 */
 	private static void putControllerPrototypeMap(String controllerName, String classPath, Class<?> targetClass) {
 		if (!targetClass.isAnnotationPresent(ClassMapingUrl.class)) {
@@ -150,11 +149,11 @@ public class MvcCore {
 	/**
 	 * 获取控制器中的所有属性
 	 * 
-	 * @param fieldMap
-	 * @param targetClass
-	 * @param rootFieldNameList
-	 * @param fieldNames
-	 * @return
+	 * @param fieldMap 属性集合
+	 * @param targetClass targetClass
+	 * @param rootFieldNameList 根属性list
+	 * @param fieldNames 属性名称
+	 * @return 集合
 	 */
 	private static Map<String, Field> getControllerFieldMap(Map<String, Field> fieldMap, Class<?> targetClass, List<String> rootFieldNameList, StringBuilder fieldNames) {
 		List<Field> fields = concat(targetClass.getFields(), targetClass.getDeclaredFields());
@@ -187,13 +186,6 @@ public class MvcCore {
 		return fieldMap;
 	}
 	
-	/**
-	 * 获取方法上的参数名称
-	 * 
-	 * @param clazz
-	 * @param methodName
-	 * @return
-	 */
 	public static Map<String, Class<?>> getMethodParamterTypeMap(Method method) {
 		Map<String, Class<?>> paramterTypeMap = new LinkedHashMap<String, Class<?>>();
 		LocalVariableTableParameterNameDiscoverer localVariableTableParameterNameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
@@ -211,10 +203,10 @@ public class MvcCore {
 	/**
 	 * 数组链接并去重操作
 	 * 
-	 * @param first
-	 * @param second
-	 * @return
-	 */
+	 * @param first 第一个数组
+	 * @param second 第二个数组
+	 * @return 数组
+ 	 */
 	private static <T> List<T> concat(T[] first, T[] second) {
 		List<T> list = new ArrayList<T>(first.length + second.length);
 		list.addAll(Arrays.asList(first));
@@ -227,8 +219,8 @@ public class MvcCore {
 
 	/**
 	 * 获取mvc.properties的配置并存入MvcPropertiesMap中
-	 * 
-	 * @return
+	 * @param key 键
+	 * @return String
 	 */
 	public static String getMvcProperties(String key) {
 		String value = null;
@@ -264,8 +256,8 @@ public class MvcCore {
 
 	/**
 	 * 获取mvc.default.properties的默认配置并存入MvcPropertiesMap中
-	 * 
-	 * @return
+	 * @param key 键
+	 * @return 配置信息
 	 */
 	public static String getMvcDefaultProperties(String key) {
 		String value = null;
@@ -295,12 +287,11 @@ public class MvcCore {
 	}
 
 	/**
-	 * URL解析
 	 * 
-	 * @param contextPath
-	 * @param uri
-	 * @return
-	 * @throws Exception
+	 * @param uri uri
+	 * @param controllerPatternKey controllerPatternKey
+	 * @return 字符串数组
+	 * @throws Exception 异常
 	 */
 	public static String[] paraseUrl(String uri, String controllerPatternKey) throws Exception {
 		CONTROLLER_PATTERN_VALUE = CONTROLLER_PATTERN_VALUE == null ? MvcCore.getMvcProperties(controllerPatternKey) : CONTROLLER_PATTERN_VALUE;
@@ -318,14 +309,14 @@ public class MvcCore {
 
 	/**
 	 * Controller控制器的Java反射方法调用
-	 * 
-	 * @param obAction
-	 * @param methodName
-	 * @return
-	 * @throws IllegalAccessException
-	 * @throws NoSuchMethodException
-	 * @throws SecurityException
-	 * @throws IllegalArgumentException
+	 * @param obAction obAction
+	 * @param controllerMethod controllerMethod
+	 * @param httpRequestMap httpRequestMap
+	 * @return 结果
+	 * @throws IllegalAccessException IllegalAccessException
+	 * @throws NoSuchMethodException NoSuchMethodException
+	 * @throws SecurityException SecurityException
+	 * @throws IllegalArgumentException IllegalArgumentException
 	 */
 	public static String invokeMethod(Object obAction, ControllerMethod controllerMethod, Map<String, String[]> httpRequestMap) throws IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException {
 		BaseController controller = (BaseController) obAction;
@@ -348,10 +339,10 @@ public class MvcCore {
 	/**
 	 * 获取反射调用方法需要传递的参数
 	 * 
-	 * @param paramterMap
-	 * @param parameterTypeMap
-	 * @return
-	 * @throws Exception
+	 * @param paramterMap paramterMap
+	 * @param parameterTypeMap parameterTypeMap
+	 * @return 数组
+	 * @throws Exception Exception
 	 */
 	public static Object[] getMethodInvokeParameters(Map<String, String[]> paramterMap, Map<String, Class<?>> parameterTypeMap) throws Exception {
 		if (parameterTypeMap.size() < 1) {
@@ -387,10 +378,10 @@ public class MvcCore {
 	/**
 	 * 注入方法参数值得类型转换
 	 * 
-	 * @param parameterType
-	 * @param parameterValue
-	 * @return
-	 * @throws ParseException
+	 * @param parameterType parameterType
+	 * @param parameterValue parameterValue
+	 * @return return
+	 * @throws ParseException ParseException
 	 */
 	private static Object convertParameter(String[] requestParamters, Class<?> fieldClazz) throws ParseException {
 		if (requestParamters == null || requestParamters[0] == null || "".equals(requestParamters[0])) {
@@ -425,9 +416,9 @@ public class MvcCore {
 	/**
 	 * 判断是否为基础类型数据
 	 * 
-	 * @param clazz
-	 * @return
-	 * @throws Exception
+	 * @param clazz clazz
+	 * @return return
+	 * @throws Exception Exception
 	 */
 	private static boolean isBaseDataType(Class<?> clazz) throws Exception {
 		return (clazz.equals(String.class) || clazz.equals(Integer.class) || clazz.equals(Byte.class) || clazz.equals(Long.class) || clazz.equals(Double.class) || clazz.equals(Float.class) || clazz.equals(Character.class) || clazz.equals(Short.class) || clazz.equals(BigDecimal.class) || clazz.equals(BigInteger.class) || clazz.equals(Boolean.class) || clazz.equals(Date.class) || clazz.isPrimitive());
@@ -436,8 +427,8 @@ public class MvcCore {
 	/**
 	 * 获取基础数据类型默认值
 	 * 
-	 * @param clazz
-	 * @return
+	 * @param clazz clazz
+	 * @return return
 	 */
 	private static Object getDefaultValue(Class<?> clazz) {
 		switch (clazz.toString()) {
@@ -462,12 +453,6 @@ public class MvcCore {
 		}
 	}
 
-	/**
-	 * 获取异常信息
-	 * 
-	 * @param ex
-	 * @return
-	 */
 	public static String getExceptionAllinformation(Throwable e) {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw, true);
@@ -479,10 +464,10 @@ public class MvcCore {
 
 	/**
 	 * 控制器的属性注入，不依赖get/set,但需要使用公共属性public
-	 * 
-	 * @param paramterMap
-	 * @param controller
-	 * @throws Exception
+	 * @param controller controller
+	 * @param fieldMap fieldMap
+	 * @param fieldValueMap fieldValueMap
+	 * @throws Exception 异常
 	 */
 	public static void controllerFieldInject(Object controller, Map<String, Field> fieldMap, Map<String, String[]> fieldValueMap) throws Exception {
 		String fieldNotFind = "";
@@ -496,26 +481,19 @@ public class MvcCore {
 		if (!"".equals(fieldNotFind)) {
 			System.out.println("The Controller Field[" + fieldNotFind + "] Not Find");
 		}
-		/**
-		 * 清空ControllerRefMap缓存map
-		 */
 		MvcCore.ControllerFieldRefMap.clear();
 	}
 
 	/**
 	 * 属性注入 getField是可以获取到父类的共有字段的， getDeclaredField只能获取本类所有字段
-	 * 
-	 * @param controllerProperty
-	 * @param controller
-	 * @param paramterMap
-	 * @param paramterName
-	 * @param propertyType
-	 * @throws NoSuchFieldException
-	 * @throws SecurityException
-	 * @throws IllegalArgumentException
-	 * @throws ParseException
-	 * @throws InstantiationException
-	 * @throws IllegalAccessException
+	 * @param controller controller
+	 * @param rootField rootField
+	 * @param subField subField
+	 * @param fieldValues fieldValues
+	 * @throws InstantiationException InstantiationException
+	 * @throws IllegalAccessException IllegalAccessException
+	 * @throws IllegalArgumentException IllegalArgumentException
+	 * @throws ParseException ParseException
 	 */
 	public static void fieldInject(Object controller, Field rootField, Field subField, String[] fieldValues) throws InstantiationException, IllegalAccessException, IllegalArgumentException, ParseException {
 		subField.setAccessible(true);
@@ -559,8 +537,11 @@ public class MvcCore {
 
 	/**
 	 * 前端控制器(RequestDispatcherFilter)对控制器进行初始化操作
-	 * 
-	 * @throws Exception
+	 * @param controllerPrototype controllerPrototype
+	 * @param request request
+	 * @param response response
+	 * @return controller
+	 * @throws Exception Exception
 	 */
 	@SuppressWarnings("unchecked")
 	public static Object initController(ControllerPrototype controllerPrototype, HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -578,11 +559,12 @@ public class MvcCore {
 
 	/**
 	 * response请求后返回结果处理
-	 * 
-	 * @param jsonData
-	 * @param response
-	 * @throws IOException
-	 * @throws ServletException
+	 * @param result result
+	 * @param controller controller
+	 * @param request request
+	 * @param response response
+	 * @throws IOException IOException
+	 * @throws ServletException ServletException
 	 */
 	public static void resultProcess(String result, Object controller, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		GSON_SERIALIZE_NULL_KEY_VALUE = GSON_SERIALIZE_NULL_KEY_VALUE == null ? MvcCore.getMvcProperties(GSON_SERIALIZE_NULL_KEY) : GSON_SERIALIZE_NULL_KEY_VALUE;
