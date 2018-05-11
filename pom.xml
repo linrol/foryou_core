@@ -1,59 +1,87 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <packaging>jar</packaging>
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>com.alinkeji</groupId>
-    <artifactId>foryou_core</artifactId>
-    <version>1.1.4</version>
-    <name>foryou_core maven webapp</name>
-    <url>http://maven.apache.org</url>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<packaging>jar</packaging>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.alinkeji</groupId>
+	<artifactId>foryou_core</artifactId>
+	<version>1.1.4</version>
+	<name>foryou_core maven webapp</name>
+	<url>http://maven.apache.org</url>
 
-    <!-- 配置包的版本信息 -->
-    <properties>
-        <!-- 设置默认编码 -->
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <servlet.version>3.0-alpha-1</servlet.version>
-        <fastjson.version>1.2.46</fastjson.version>
-        <gson.version>2.3.1</gson.version>
-    </properties>
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
 
-    <dependencies>
+	<!-- 配置包的版本信息 -->
+	<properties>
+		<!-- 设置默认编码 -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<servlet.version>3.0-alpha-1</servlet.version>
+		<fastjson.version>1.2.46</fastjson.version>
+		<gson.version>2.3.1</gson.version>
+	</properties>
 
-        <!-- https://mvnrepository.com/artifact/org.springframework/spring-asm -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
-            <version>3.2.8.RELEASE</version>
-        </dependency>
+	<dependencies>
 
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>${servlet.version}</version>
-        </dependency>
+		<!-- https://mvnrepository.com/artifact/org.springframework/spring-asm -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>3.2.8.RELEASE</version>
+		</dependency>
 
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>${gson.version}</version>
-        </dependency>
-    </dependencies>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>${servlet.version}</version>
+		</dependency>
 
-    <build>
-        <finalName>foryou_core</finalName>
-        <defaultGoal>compile</defaultGoal>
-        <sourceDirectory>src/main/core</sourceDirectory>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <configuration>
-                        <source>1.7</source>
-                        <target>1.7</target>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>${gson.version}</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<finalName>foryou_core</finalName>
+		<defaultGoal>compile</defaultGoal>
+		<sourceDirectory>src/main/core</sourceDirectory>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<configuration>
+						<source>1.7</source>
+						<target>1.7</target>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<scm>
+		<tag>master</tag>
+		<url>https://github.com/linrol/foryou_core</url>
+		<connection>scm:git:git@github.com:linrol/foryou_core.git</connection>
+		<developerConnection>https://linrol.github.io/</developerConnection>
+	</scm>
+	<developers>
+		<developer>
+			<name>linrol</name>
+			<email>1071893649@qq.com</email>
+			<organization>alinkeji</organization>
+			<url>https://linrol.github.io</url>
+		</developer>
+	</developers>
 </project>
