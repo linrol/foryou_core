@@ -563,7 +563,7 @@ public class MvcCore {
 	/**
 	 * response请求后返回结果处理
 	 * @param result result
-	 * @param controller controller
+	 * @param baseController baseController
 	 * @param request request
 	 * @param response response
 	 * @throws IOException IOException

@@ -12,6 +12,7 @@ public class ForyouStack<T> {
 
 	/**
 	 * 入栈 将元素加入LinkedList容器 (即插入到链表的第一个位置)
+	 * @param s 入栈元素
 	 */
 	public synchronized void push(T s) {
 		linkedlist.addFirst(s);
@@ -20,7 +21,7 @@ public class ForyouStack<T> {
 	/**
 	 * 取出堆栈中最上面的元素 (即取出链表linkedList的第一个元素)
 	 * 
-	 * @return
+	 * @return 返回栈顶
 	 */
 	public T peek() {
 		return linkedlist.getFirst();
@@ -29,7 +30,7 @@ public class ForyouStack<T> {
 	/**
 	 * 出栈 取出并删除最上面的元素 (即移出linkedList的第一个元素)
 	 * 
-	 * @return
+	 * @return 出栈并删除
 	 */
 	public T pop() {
 		return linkedlist.removeFirst();
@@ -38,7 +39,7 @@ public class ForyouStack<T> {
 	/**
 	 * 判断堆栈是否为空 (即判断 linkedList是否为空)
 	 * 
-	 * @return
+	 * @return 布尔值
 	 */
 	public boolean empty() {
 		return linkedlist.isEmpty();
@@ -47,7 +48,7 @@ public class ForyouStack<T> {
 	/**
 	 * 获取元素个数
 	 * 
-	 * @return
+	 * @return 栈个数
 	 */
 	public int size() {
 		return linkedlist.size();
