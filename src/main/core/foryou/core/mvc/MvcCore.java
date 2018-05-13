@@ -42,6 +42,7 @@ import foryou.core.annotation.SynchronizedLock;
 import foryou.core.base.BaseController;
 import foryou.core.entity.ControllerMethod;
 import foryou.core.entity.ControllerPrototype;
+import foryou.core.util.StringUtil;
 
 /**
  * fouryou框架核心类
@@ -381,30 +382,30 @@ public class MvcCore {
 	 * @throws ParseException ParseException
 	 */
 	private static Object convertParameter(String[] requestParamters, Class<?> fieldClazz) throws ParseException {
-		if (requestParamters == null || requestParamters[0] == null || "".equals(requestParamters[0])) {
+		if (requestParamters == null || StringUtil.isEmpty(requestParamters[0])) {
 			return null;
 		}
-		if (fieldClazz.toString().equals("class [Ljava.lang.String")) {
+		if (fieldClazz.equals(String[].class)) {
 			return requestParamters;
-		} else if (fieldClazz.toString().equals("class java.lang.String")) {
+		} else if (fieldClazz.equals(String.class)) {
 			return requestParamters[0];
-		} else if (fieldClazz.toString().equals("class java.lang.Integer") || fieldClazz.toString().equals("int")) {
+		} else if (fieldClazz.equals(Integer.class) || fieldClazz.equals(int.class)) {
 			return Integer.parseInt(requestParamters[0]);
-		} else if (fieldClazz.toString().equals("class java.lang.Float") || fieldClazz.toString().equals("float")) {
+		} else if (fieldClazz.equals(Float.class) || fieldClazz.equals(float.class)) {
 			return Float.parseFloat(requestParamters[0]);
-		} else if (fieldClazz.toString().equals("class java.lang.Double") || fieldClazz.toString().equals("double")) {
+		} else if (fieldClazz.equals(Double.class) || fieldClazz.equals(double.class)) {
 			return Double.parseDouble(requestParamters[0]);
-		} else if (fieldClazz.toString().equals("class java.lang.Boolean") || fieldClazz.toString().equals("boolean")) {
+		} else if (fieldClazz.equals(Boolean.class) || fieldClazz.equals(Boolean.class)) {
 			return Boolean.parseBoolean(requestParamters[0]);
-		} else if (fieldClazz.toString().equals("class java.lang.Long") || fieldClazz.toString().equals("long")) {
+		} else if (fieldClazz.equals(Long.class) || fieldClazz.equals(long.class)) {
 			return Long.parseLong(requestParamters[0]);
-		} else if (fieldClazz.toString().equals("class java.lang.Character") || fieldClazz.toString().equals("char")) {
+		} else if (fieldClazz.equals(Character.class) || fieldClazz.equals(char.class)) {
 			return requestParamters[0].charAt(0);
-		} else if (fieldClazz.toString().equals("class java.util.Date") && requestParamters[0].length() == 10) {
+		} else if (fieldClazz.equals(Date.class) && requestParamters[0].length() == 10) {
 			return new SimpleDateFormat("yyyy-MM-dd").parse(requestParamters[0]);
-		} else if (fieldClazz.toString().equals("class java.util.Date") && requestParamters[0].length() == 16) {
+		} else if (fieldClazz.equals(Date.class) && requestParamters[0].length() == 16) {
 			return new SimpleDateFormat("yyyy-MM-dd hh:mm").parse(requestParamters[0]);
-		} else if (fieldClazz.toString().equals("class java.util.Date") && requestParamters[0].length() == 19) {
+		} else if (fieldClazz.equals(Date.class) && requestParamters[0].length() == 19) {
 			return new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(requestParamters[0]);
 		}
 		return null;
