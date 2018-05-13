@@ -356,7 +356,6 @@ public class MvcCore {
 		Iterator<Map.Entry<String, Class<?>>> entryIterator = parameterTypeMap.entrySet().iterator();
 		while (entryIterator.hasNext()) {
 			Map.Entry<String, Class<?>> parameterType = entryIterator.next();
-			System.out.println("The Method Paramter Key:" + parameterType.getKey() + " Type:" + parameterType.getValue());
 			if (isBaseDataType(parameterType.getValue())) {
 				// 基础数据类
 				objects[i++] = paramterMap.get(parameterType.getKey()) == null ? getDefaultValue(parameterType.getValue()) : convertParameter(paramterMap.get(parameterType.getKey()), parameterType.getValue());
