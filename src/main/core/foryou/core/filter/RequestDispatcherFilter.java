@@ -67,7 +67,7 @@ public class RequestDispatcherFilter implements Filter {
 			if (beforeInvoke(request, response, controllerPrototype)) { // 请求前拦截器调用
 				return; 
 			}
-			Object controller = MvcCore.initController(controllerPrototype, request, response);
+			BaseController controller = MvcCore.initController(controllerPrototype, request, response);
 			foryouCoreEndTime = System.currentTimeMillis();
 			String invokeResult = MvcCore.invokeMethod(controller, controllerMethod, request.getParameterMap());
 			foryouCoreStartTime = System.currentTimeMillis();

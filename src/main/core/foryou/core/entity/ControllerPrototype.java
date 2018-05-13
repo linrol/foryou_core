@@ -3,6 +3,8 @@ package foryou.core.entity;
 import java.lang.reflect.Field;
 import java.util.Map;
 
+import foryou.core.base.BaseController;
+
 /** 
 * @author 罗林 E-mail:1071893649@qq.com 
 * @version 创建时间：2018年1月11日 上午1:10:55 
@@ -14,7 +16,7 @@ public class ControllerPrototype {
 	 * 控制器类路径
 	 * eg:com.foryou.core.mvc.TestController
 	 */
-	public String controllerClassPath;
+	public BaseController controller;
 	
 	/**
 	 * 拦截器类路径
@@ -33,12 +35,12 @@ public class ControllerPrototype {
 	 */
 	public Map<String, ControllerMethod> methodMap;
 
-	public String getControllerClassPath() {
-		return controllerClassPath;
+	public BaseController getController() {
+		return controller;
 	}
 
-	public void setControllerClassPath(String controllerClassPath) {
-		this.controllerClassPath = controllerClassPath;
+	public void setController(BaseController controller) {
+		this.controller = controller;
 	}
 
 	public String getInterceptorClassPath() {

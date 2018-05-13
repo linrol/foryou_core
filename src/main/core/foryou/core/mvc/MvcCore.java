@@ -103,8 +103,10 @@ public class MvcCore {
 	 * @param controllerName 控制器名称
 	 * @param classPath 类路径
 	 * @param targetClass targetClass
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
 	 */
-	private static void putControllerPrototypeMap(String controllerName, String classPath, Class<?> targetClass) {
+	private static void putControllerPrototypeMap(String controllerName, String classPath, Class<?> targetClass) throws InstantiationException, IllegalAccessException {
 		if (!targetClass.isAnnotationPresent(ClassMapingUrl.class)) {
 			return;
 		}
@@ -113,8 +115,9 @@ public class MvcCore {
 			return;
 		}
 		ControllerPrototype controllerPrototype = new ControllerPrototype();
-		controllerPrototype.setControllerClassPath(classPath);
-		System.out.println("Create Controller Url Mapping[" + classPath + "]...");
+		BaseController controller = (BaseController)targetClass.newInstance();
+		controllerPrototype.setController(controller);
+		System.out.println("Create [" + classPath + "].Controller ...");
 		StringBuilder fieldNames = new StringBuilder("[");
 		controllerPrototype.setFieldMap(getControllerFieldMap(new ConcurrentHashMap<String, Field>(), targetClass, new ArrayList<String>(), fieldNames));
 		System.out.println("Create Controller Field Import" + fieldNames.toString() + "]...");
@@ -544,15 +547,15 @@ public class MvcCore {
 	 * @throws Exception Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public static Object initController(ControllerPrototype controllerPrototype, HttpServletRequest request, HttpServletResponse response) throws Exception {
+	public static BaseController initController(ControllerPrototype controllerPrototype, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		String ip = request.getHeader("X-Real-IP");
 		ip = (ip == null || ip.equals("")) ? request.getRemoteAddr() : ip;
-		Object controller = Class.forName(controllerPrototype.getControllerClassPath()).newInstance();
-		((BaseController) controller).request = (request);
-		((BaseController) controller).response = (response);
-		((BaseController) controller).session = (request.getSession());
-		((BaseController) controller).servletContext = (request.getSession().getServletContext());
-		((BaseController) controller).ip = (ip);
+		BaseController controller = controllerPrototype.getController();
+		controller.requestThreadLocal.set(request);
+		controller.responseThreadLocal.set(response);
+		controller.sessionThreadLocal.set(request.getSession());
+		controller.servletContextThreadLocal.set(request.getSession().getServletContext());
+		controller.ipThreadLocal.set(ip);
 		MvcCore.controllerFieldInject(controller, controllerPrototype.getFieldMap(), request.getParameterMap());
 		return controller;
 	}
@@ -566,7 +569,7 @@ public class MvcCore {
 	 * @throws IOException IOException
 	 * @throws ServletException ServletException
 	 */
-	public static void resultProcess(String result, Object controller, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+	public static void resultProcess(String result, BaseController baseController, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		GSON_SERIALIZE_NULL_KEY_VALUE = GSON_SERIALIZE_NULL_KEY_VALUE == null ? MvcCore.getMvcProperties(GSON_SERIALIZE_NULL_KEY) : GSON_SERIALIZE_NULL_KEY_VALUE;
 		Gson gson = null;
 		if (GSON_SERIALIZE_NULL_KEY_VALUE.equals("null")) {
@@ -575,17 +578,16 @@ public class MvcCore {
 			gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
 		}
 		Boolean isAsyncRequest = "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
-		BaseController baseController = (BaseController) controller;
 		if (BaseController.RESULT_AJAX_DATA.equals(result)) {
-			response.getWriter().write(gson.toJson(baseController.ajaxData));
+			response.getWriter().write(gson.toJson(baseController.ajaxDataThreadLocal.get()));
 		} else if (BaseController.RESULT_AJAX_BOOLEAN.equals(result)) {
-			response.getWriter().write(gson.toJson(baseController.ajaxBoolean));
+			response.getWriter().write(gson.toJson(baseController.ajaxBooleanThreadLocal.get()));
 		} else if (BaseController.RESULT_AJAX_STREAM.equals(result)) {
-			response.getOutputStream().write(baseController.ajaxData.getByteData());
+			response.getOutputStream().write(baseController.ajaxDataThreadLocal.get().getByteData());
 		} else if (BaseController.RESULT_REDIRECT.equals(result) && (!isAsyncRequest)) {
-			response.sendRedirect(baseController.redirectData.getRedirectUrl());
+			response.sendRedirect(baseController.redirectDataThreadLocal.get().getRedirectUrl());
 		} else if (BaseController.RESULT_REDIRECT.equals(result) && isAsyncRequest) {
-			response.getWriter().write(gson.toJson(baseController.redirectData));
+			response.getWriter().write(gson.toJson(baseController.redirectDataThreadLocal.get()));
 		} else {
 			response.getWriter().write(result);
 		}
