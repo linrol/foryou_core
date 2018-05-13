@@ -418,7 +418,7 @@ public class MvcCore {
 	 * @throws Exception Exception
 	 */
 	private static boolean isBaseDataType(Class<?> clazz) throws Exception {
-		return (clazz.equals(String.class) || clazz.equals(Integer.class) || clazz.equals(Byte.class) || clazz.equals(Long.class) || clazz.equals(Double.class) || clazz.equals(Float.class) || clazz.equals(Character.class) || clazz.equals(Short.class) || clazz.equals(BigDecimal.class) || clazz.equals(BigInteger.class) || clazz.equals(Boolean.class) || clazz.equals(Date.class) || clazz.isPrimitive());
+		return (clazz.equals(String.class) || clazz.equals(String[].class) || clazz.equals(Integer.class) || clazz.equals(Integer[].class) || clazz.equals(Byte.class) || clazz.equals(Byte[].class) || clazz.equals(Long.class) || clazz.equals(Long[].class) || clazz.equals(Double.class) || clazz.equals(Double[].class) || clazz.equals(Float.class) || clazz.equals(Float[].class) || clazz.equals(Character.class) || clazz.equals(Character[].class) || clazz.equals(Short.class) || clazz.equals(Short[].class) || clazz.equals(BigDecimal.class) || clazz.equals(BigDecimal[].class) || clazz.equals(BigInteger.class) || clazz.equals(BigInteger[].class) || clazz.equals(Boolean.class) || clazz.equals(Boolean[].class) || clazz.equals(Date.class) || clazz.equals(Date[].class) || clazz.isPrimitive());
 	}
 
 	/**
