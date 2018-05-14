@@ -385,7 +385,7 @@ public class MvcCore {
 		if (requestParamters == null || StringUtil.isEmpty(requestParamters[0])) {
 			return null;
 		}
-		if (fieldClazz.equals(String[].class)) {
+		if (fieldClazz.isArray()) {
 			return requestParamters;
 		} else if (fieldClazz.equals(String.class)) {
 			return requestParamters[0];
@@ -508,27 +508,27 @@ public class MvcCore {
 			fieldInject(rootFieldObject, null, subField, fieldValues);
 			rootField.setAccessible(true);
 			rootField.set(controller, rootFieldObject);
-		} else if (subField.getGenericType().toString().indexOf("[L") != -1 && (subField.getGenericType().toString().indexOf("java.lang.String") != -1 || subField.getGenericType().toString().indexOf("java.lang.Integer") != -1)) {
+		} else if (subField.getType().isArray()) {
 			subField.set(controller, fieldValues);
-		} else if (subField.getGenericType().toString().equals("class java.lang.String")) {
+		} else if (subField.getType().equals(String.class)) {
 			subField.set(controller, fieldValues[0]);
-		} else if (subField.getGenericType().toString().equals("class java.lang.Integer") || subField.getGenericType().toString().equals("int")) {
+		} else if (subField.getType().toString().equals(Integer.class) || subField.getGenericType().equals(int.class)) {
 			subField.set(controller, Integer.parseInt(fieldValues[0]));
-		} else if (subField.getGenericType().toString().equals("class java.lang.Float") || subField.getGenericType().toString().equals("float")) {
+		} else if (subField.getType().equals(Float.class) || subField.getType().equals(float.class)) {
 			subField.set(controller, Float.parseFloat(fieldValues[0]));
-		} else if (subField.getGenericType().toString().equals("class java.lang.Double") || subField.getGenericType().toString().equals("double")) {
+		} else if (subField.getType().equals(Double.class) || subField.getType().equals(double.class)) {
 			subField.set(controller, Double.parseDouble(fieldValues[0]));
-		} else if (subField.getGenericType().toString().equals("class java.lang.Boolean") || subField.getGenericType().toString().equals("boolean")) {
+		} else if (subField.getType().equals(Boolean.class) || subField.getType().equals(boolean.class)) {
 			subField.set(controller, Boolean.parseBoolean(fieldValues[0]));
-		} else if (subField.getGenericType().toString().equals("class java.lang.Long") || subField.getGenericType().toString().equals("long")) {
+		} else if (subField.getType().equals(Long.class) || subField.getType().equals(long.class)) {
 			subField.set(controller, Long.parseLong(fieldValues[0]));
-		} else if (subField.getGenericType().toString().equals("class java.lang.Character") || subField.getGenericType().toString().equals("char")) {
+		} else if (subField.getType().equals(Character.class) || subField.getType().equals(char.class)) {
 			subField.set(controller, fieldValues[0].charAt(0));
-		} else if (subField.getGenericType().toString().equals("class java.util.Date") && fieldValues[0].length() == 10) {
+		} else if (subField.getType().equals(Date.class) && fieldValues[0].length() == 10) {
 			subField.set(controller, new SimpleDateFormat("yyyy-MM-dd").parse(fieldValues[0]));
-		} else if (subField.getGenericType().toString().equals("class java.util.Date") && fieldValues[0].length() == 16) {
+		} else if (subField.getType().equals(Date.class) && fieldValues[0].length() == 16) {
 			subField.set(controller, new SimpleDateFormat("yyyy-MM-dd hh:mm").parse(fieldValues[0]));
-		} else if (subField.getGenericType().toString().equals("class java.util.Date") && fieldValues[0].length() == 19) {
+		} else if (subField.getType().equals(Date.class) && fieldValues[0].length() == 19) {
 			subField.set(controller, new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(fieldValues[0]));
 		}
 	}
