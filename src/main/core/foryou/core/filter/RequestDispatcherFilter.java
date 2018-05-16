@@ -11,6 +11,9 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+
 import foryou.core.base.BaseController;
 import foryou.core.entity.ControllerMethod;
 import foryou.core.entity.ControllerPrototype;
@@ -24,7 +27,14 @@ import foryou.core.mvc.MvcCore;
  *
  */
 public class RequestDispatcherFilter implements Filter {
+	
+	private Logger logger;
 
+	public void init(FilterConfig filterConfig) throws ServletException {
+		PropertyConfigurator.configure(this.getClass().getClassLoader().getResource("log4j.foryou.core.properties"));
+		logger = Logger.getLogger(this.getClass());
+	}
+	
 	public void destroy() {
 
 	}
@@ -44,7 +54,7 @@ public class RequestDispatcherFilter implements Filter {
 			response.getWriter().write(eCheckUrl.getMessage());
 			return;
 		}
-		System.out.println("\nThe Request Controller [" + paraseUrl[0] + "] And Method [" + paraseUrl[1] + "] Start");
+		logger.info("the request controller [" + paraseUrl[0] + "] and method [" + paraseUrl[1] + "] start");
 		request.setCharacterEncoding("UTF-8");
 		response.setContentType("text/json");
 		response.setCharacterEncoding("UTF-8");
@@ -53,14 +63,14 @@ public class RequestDispatcherFilter implements Filter {
 			String methodName = paraseUrl[1];
 			ControllerPrototype controllerPrototype = MvcCore.controllerPrototypeMap.get(controllerName);
 			if (controllerPrototype == null) {
-				System.err.println("The Request [" + request.getRequestURL() + "] Not Find Controller");
-				MvcCore.resultProcess("The Request [" + request.getRequestURL() + "] Not Find Controller", new BaseController(), request, response);
+				logger.error("the request [" + request.getRequestURL() + "] not find controller");
+				MvcCore.resultProcess("the request [" + request.getRequestURL() + "] not find controller", new BaseController(), request, response);
 				return;
 			}
 			ControllerMethod controllerMethod = controllerPrototype.getMethodMap().get(methodName);
 			if(controllerMethod == null || controllerMethod.getMethod() == null) {
-				System.err.println("The Request [" + request.getRequestURL() + "] Not Find Method");
-				MvcCore.resultProcess("The Request [" + request.getRequestURL() + "] Not Find Method", new BaseController(), request, response);
+				logger.error("the request [" + request.getRequestURL() + "] not find method");
+				MvcCore.resultProcess("the request [" + request.getRequestURL() + "] not find method", new BaseController(), request, response);
 				return;
 			}
 			//checkRepeatRequest(request.getSession());
@@ -81,30 +91,8 @@ public class RequestDispatcherFilter implements Filter {
 			return;
 		}
 		long endTime = System.currentTimeMillis();
-		System.out.println("The Request Total Time [" + (endTime - startTime) + "]ms,ForyouCore Code Time[" + (foryouCoreEndTime + endTime - foryouCoreStartTime - startTime) + "]ms,Business Code Time[" + (foryouCoreStartTime - foryouCoreEndTime) + "]ms");
+		logger.info("the request total time (" + (endTime - startTime) + ")ms,foryou_core run time(" + (foryouCoreEndTime + endTime - foryouCoreStartTime - startTime) + ")ms,business run time(" + (foryouCoreStartTime - foryouCoreEndTime) + ")ms");
 	}
-
-	public void init(FilterConfig filterConfig) throws ServletException {
-	}
-	
-	/**
-	 * 校验200毫秒内的重复请求
-	 * @param session
-	 * @throws Exception 
-	 */
-	/*private void checkRepeatRequest(HttpSession session) throws Exception{
-		//bug,应判断同一个method
-		if(session.getAttribute("timeToken") == null){
-			session.setAttribute("timeToken", System.currentTimeMillis());
-			return;
-		}
-		if((System.currentTimeMillis() - Long.parseLong(String.valueOf(session.getAttribute("timeToken")))) < 200){
-			System.err.println("The Request 200 Millis Reject User Repeated Requests");
-			throw new Exception("操作过于频繁，请稍后再试...");
-		}
-		session.setAttribute("timeToken", System.currentTimeMillis());
-		return;
-	}*/
 
 	/**
 	 * 请求前拦截器调用

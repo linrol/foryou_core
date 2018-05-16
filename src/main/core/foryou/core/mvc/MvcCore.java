@@ -30,6 +30,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 
 import com.google.common.util.concurrent.RateLimiter;
@@ -54,6 +56,13 @@ import foryou.core.util.StringUtil;
  */
 public class MvcCore {
 	
+	private static Logger logger;
+	
+	static {
+		PropertyConfigurator.configure(MvcCore.class.getClassLoader().getResource("log4j.foryou.core.properties"));
+		logger = Logger.getLogger(MvcCore.class);
+	}
+	
 	public static String SCAN_PACKAGE_KEY = "controller-scan-package";
 	public static String CONTROLLER_PATTERN_KEY = "controller-url-pattern";
 	public static String CONTROLLER_INTERCEPTOR_KEY = "controller-default-interceptor";
@@ -68,7 +77,7 @@ public class MvcCore {
 	public static Map<String, ControllerPrototype> controllerPrototypeMap = new ConcurrentHashMap<String, ControllerPrototype>();
 	public static Map<String, Object> ControllerFieldRefMap = new ConcurrentHashMap<String, Object>();
 
-	public static void initMvc(File folder, String packageName, String[] scanPackages) {
+	public static void initMvc(File folder, String packageName, String[] scanPackages) throws Exception {
 		File[] files = folder.listFiles();
 		for (File file : files) {
 			String fileName = file.getName();
@@ -83,21 +92,9 @@ public class MvcCore {
 				if (scanPackage != null && fileName.lastIndexOf(".class") != -1 && packageName.indexOf(scanPackage) != -1) {
 					String controllerName = fileName.replace(".class", "");
 					String classPath = packageName + controllerName;
-					System.out.println("Init [" + classPath + "]");
-					Class<?> targetClass = null;
-					try {
-						targetClass = Class.forName(classPath);
-					} catch (ClassNotFoundException e) {
-						e.printStackTrace();
-						System.err.println("The ClassPath[" + classPath + "] Not Found...");
-						continue;
-					}
-					try {
-						putControllerPrototypeMap(controllerName, classPath, targetClass);
-					} catch (Exception e) {
-						e.printStackTrace();
-						return;
-					}
+					logger.info("init controller [" + classPath + "]");
+					Class<?> targetClass = Class.forName(classPath);
+					putControllerPrototypeMap(controllerName, classPath, targetClass);
 				}
 			}
 		}
@@ -117,19 +114,19 @@ public class MvcCore {
 			return;
 		}
 		if (controllerPrototypeMap.containsKey(controllerName)) {
-			System.err.println("Create Controller Is Error:[the class name:" + controllerName + " already...]");
+			logger.error("create controller error:[the class name:" + controllerName + " already...]");
 			return;
 		}
 		ControllerPrototype controllerPrototype = new ControllerPrototype();
 		controllerPrototype.setControllerClassPath(classPath);
-		System.out.println("Create Controller Url Mapping[" + classPath + "]...");
+		logger.info("create controller url mapping[" + classPath + "]...");
 		StringBuilder fieldNames = new StringBuilder("[");
 		Map<String, Field> fieldMap = new ConcurrentHashMap<String, Field>();
 		Map<String,Object> serviceMap = new ConcurrentHashMap<String, Object>();
 		putControllerFieldServiceMap(fieldMap,serviceMap,targetClass, new ArrayList<String>(), fieldNames);
 		controllerPrototype.setFieldMap(fieldMap);
 		controllerPrototype.setServiceMap(serviceMap);
-		System.out.println("Create Controller Field Import" + fieldNames.toString() + "]...");
+		logger.info("create controller field import" + fieldNames.toString() + "]...");
 		Method[] methods = targetClass.getMethods();
 		Map<String, ControllerMethod> methodMap = new ConcurrentHashMap<String, ControllerMethod>();
 		for (Method method : methods) {
@@ -147,12 +144,12 @@ public class MvcCore {
 		InterceptorByClass interceptorByClass = (InterceptorByClass) targetClass.getAnnotation(InterceptorByClass.class);
 		String interceptorClassPaths = interceptorByClass.classPaths();
 		if ("config-file:mvc.properties".equals(interceptorClassPaths)) {
-			System.out.println("Create Controller Interceptor ClassPaths[" + CONTROLLER_INTERCEPTOR_VALUE + "]...");
+			logger.info("create controller interceptor classpaths[" + CONTROLLER_INTERCEPTOR_VALUE + "]...");
 			controllerPrototype.setInterceptorClassPath(CONTROLLER_INTERCEPTOR_VALUE);
 		} else if ("*".equals(interceptorClassPaths)) {
 			// TODO 所有拦截器
 		} else {
-			System.out.println("Create Controller Interceptor ClassPaths[" + interceptorClassPaths + "]...");
+			logger.info("create controller interceptor classpaths[" + interceptorClassPaths + "]...");
 			controllerPrototype.setInterceptorClassPath(interceptorClassPaths);
 		}
 		controllerPrototypeMap.put(controllerName, controllerPrototype);
@@ -263,12 +260,12 @@ public class MvcCore {
 			reader.close();
 			inputStreamReader.close();
 		} catch (Exception e) {
-			System.err.println("Error: There was an error loading the configuration file:[mvc.properties],please check the file");
+			logger.error("error: loading the configuration file:[mvc.properties],please check the file");
 			e.printStackTrace();
 		}
 		value = value == null ? getMvcDefaultProperties(key) : value;
 		if (value == null) {
-			System.err.println("Error: There configuration file[mvc.properties,mvc.default.properties] not found key:" + key);
+			logger.error("error: the configuration file[mvc.properties,mvc.default.properties] not found key:" + key);
 		}
 		return value;
 	}
@@ -296,11 +293,11 @@ public class MvcCore {
 			reader.close();
 			inputStreamReader.close();
 		} catch (Exception e) {
-			System.err.println("Error: There was an error loading the configuration file:[mvc.properties],please check the file");
+			logger.error("error: loading the configuration file:[mvc.properties],please check the file");
 			e.printStackTrace();
 		}
 		if (value == null) {
-			System.err.println("Error: There configuration file[mvc.properties] not found key:" + key);
+			logger.error("error: the configuration file[mvc.properties,mvc.default.properties] not found key:" + key);
 		}
 		return value;
 	}
@@ -315,8 +312,8 @@ public class MvcCore {
 	public static String[] paraseUrl(String uri, String controllerPatternKey) throws Exception {
 		CONTROLLER_PATTERN_VALUE = CONTROLLER_PATTERN_VALUE == null ? MvcCore.getMvcProperties(controllerPatternKey) : CONTROLLER_PATTERN_VALUE;
 		if (uri.indexOf(CONTROLLER_PATTERN_VALUE) == -1) {
-			System.err.println("the Request " + uri + " Is Not Such As " + CONTROLLER_PATTERN_VALUE + "Controller/Method...");
-			throw new Exception("the Request " + uri + " Is Not Such As " + CONTROLLER_PATTERN_VALUE + "Controller/Method...");
+			logger.error("request " + uri + " is not such as " + CONTROLLER_PATTERN_VALUE + "controller/method...");
+			throw new Exception("request " + uri + " is not such as " + CONTROLLER_PATTERN_VALUE + "controller/method...");
 		}
 		uri = uri.split(CONTROLLER_PATTERN_VALUE)[1].replace("!", "/").replace(".php", "");
 		String[] ret = { "", "" };
@@ -340,7 +337,7 @@ public class MvcCore {
 	public static String invokeMethod(Object obAction, ControllerMethod controllerMethod, Map<String, String[]> httpRequestMap) throws IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException {
 		BaseController controller = (BaseController) obAction;
 		double acquire = limiter.acquire();
-        System.out.println("get the Rate limiter token success! waiting time: " + acquire + "s");
+        logger.info("request get rate limiter token success! waiting time( " + acquire + ") second");
 		try {
 			if (controllerMethod.getMethodSynchronized()) {
 				synchronized (BaseController.class) {
@@ -502,7 +499,7 @@ public class MvcCore {
 			fieldInject(controller, entry.getKey().indexOf(".") == -1 ? null : fieldMap.get(entry.getKey().split("\\.")[0]), fieldMap.get(entry.getKey()), entry.getValue());
 		}
 		if (!"".equals(fieldNotFind)) {
-			System.out.println("The Controller Field[" + fieldNotFind + "] Not Find");
+			logger.info("controller field[" + fieldNotFind + "] not found");
 		}
 		MvcCore.ControllerFieldRefMap.clear();
 	}

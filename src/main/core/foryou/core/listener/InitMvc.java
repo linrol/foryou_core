@@ -24,9 +24,13 @@ public class InitMvc implements ServletContextListener {
 	public void contextInitialized(ServletContextEvent servletContextEvent) {
 		System.out.println("System Initialize");
 		File root = new File(this.getClass().getClassLoader().getResource("/").getPath());
-		System.out.println("Init Mvc....");
+		System.out.println("Init Foryou Core Mvc....");
 		String scanPropertie = MvcCore.getMvcProperties(MvcCore.SCAN_PACKAGE_KEY);
-		MvcCore.initMvc(root, "", scanPropertie.split(","));
+		try {
+			MvcCore.initMvc(root, "", scanPropertie.split(","));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }
