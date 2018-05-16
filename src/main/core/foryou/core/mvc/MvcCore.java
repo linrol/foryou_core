@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 
+import com.google.common.util.concurrent.RateLimiter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -56,10 +57,13 @@ public class MvcCore {
 	public static String SCAN_PACKAGE_KEY = "controller-scan-package";
 	public static String CONTROLLER_PATTERN_KEY = "controller-url-pattern";
 	public static String CONTROLLER_INTERCEPTOR_KEY = "controller-default-interceptor";
+	
 	public static String CONTROLLER_PATTERN_VALUE = getMvcProperties(CONTROLLER_PATTERN_KEY);
 	public static String CONTROLLER_INTERCEPTOR_VALUE = getMvcProperties(CONTROLLER_INTERCEPTOR_KEY);
 	public static String GSON_SERIALIZE_NULL_KEY = "gson-serializeNulls";
 	public static String GSON_SERIALIZE_NULL_KEY_VALUE = getMvcProperties(GSON_SERIALIZE_NULL_KEY);
+	
+	public static RateLimiter limiter = RateLimiter.create(Double.parseDouble(getMvcProperties("controller-rate-limiter"))) ;
 
 	public static Map<String, ControllerPrototype> controllerPrototypeMap = new ConcurrentHashMap<String, ControllerPrototype>();
 	public static Map<String, Object> ControllerFieldRefMap = new ConcurrentHashMap<String, Object>();
@@ -335,6 +339,8 @@ public class MvcCore {
 	 */
 	public static String invokeMethod(Object obAction, ControllerMethod controllerMethod, Map<String, String[]> httpRequestMap) throws IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException {
 		BaseController controller = (BaseController) obAction;
+		double acquire = limiter.acquire();
+        System.out.println("get the Rate limiter token success! consume = " + acquire);
 		try {
 			if (controllerMethod.getMethodSynchronized()) {
 				synchronized (BaseController.class) {

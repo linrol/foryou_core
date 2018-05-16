@@ -16,6 +16,7 @@
 		<servlet.version>3.0-alpha-1</servlet.version>
 		<fastjson.version>1.2.46</fastjson.version>
 		<gson.version>2.3.1</gson.version>
+		<guava.version>19.0</guava.version>
 	</properties>
 
 	<dependencies>
@@ -38,6 +39,15 @@
 			<artifactId>gson</artifactId>
 			<version>${gson.version}</version>
 		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
+		</dependency>
+
+
 	</dependencies>
 
 	<build>
