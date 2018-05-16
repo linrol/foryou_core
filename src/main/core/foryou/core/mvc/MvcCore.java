@@ -337,7 +337,7 @@ public class MvcCore {
 	public static String invokeMethod(Object obAction, ControllerMethod controllerMethod, Map<String, String[]> httpRequestMap) throws IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException {
 		BaseController controller = (BaseController) obAction;
 		double acquire = limiter.acquire();
-        logger.info("request get rate limiter token success! waiting time( " + acquire + ") second");
+        logger.info("request get rate limiter token success! waiting time(" + acquire + ") second");
 		try {
 			if (controllerMethod.getMethodSynchronized()) {
 				synchronized (BaseController.class) {

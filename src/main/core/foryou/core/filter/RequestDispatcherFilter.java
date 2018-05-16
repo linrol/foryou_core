@@ -54,7 +54,7 @@ public class RequestDispatcherFilter implements Filter {
 			response.getWriter().write(eCheckUrl.getMessage());
 			return;
 		}
-		logger.info("the request controller [" + paraseUrl[0] + "] and method [" + paraseUrl[1] + "] start");
+		logger.info("request controller [" + paraseUrl[0] + "] and method [" + paraseUrl[1] + "] start");
 		request.setCharacterEncoding("UTF-8");
 		response.setContentType("text/json");
 		response.setCharacterEncoding("UTF-8");
@@ -63,13 +63,13 @@ public class RequestDispatcherFilter implements Filter {
 			String methodName = paraseUrl[1];
 			ControllerPrototype controllerPrototype = MvcCore.controllerPrototypeMap.get(controllerName);
 			if (controllerPrototype == null) {
-				logger.error("the request [" + request.getRequestURL() + "] not find controller");
+				logger.error("request [" + request.getRequestURL() + "] not find controller");
 				MvcCore.resultProcess("the request [" + request.getRequestURL() + "] not find controller", new BaseController(), request, response);
 				return;
 			}
 			ControllerMethod controllerMethod = controllerPrototype.getMethodMap().get(methodName);
 			if(controllerMethod == null || controllerMethod.getMethod() == null) {
-				logger.error("the request [" + request.getRequestURL() + "] not find method");
+				logger.error("request [" + request.getRequestURL() + "] not find method");
 				MvcCore.resultProcess("the request [" + request.getRequestURL() + "] not find method", new BaseController(), request, response);
 				return;
 			}
@@ -91,7 +91,7 @@ public class RequestDispatcherFilter implements Filter {
 			return;
 		}
 		long endTime = System.currentTimeMillis();
-		logger.info("the request total time (" + (endTime - startTime) + ")ms,foryou_core run time(" + (foryouCoreEndTime + endTime - foryouCoreStartTime - startTime) + ")ms,business run time(" + (foryouCoreStartTime - foryouCoreEndTime) + ")ms");
+		logger.info("request total time (" + (endTime - startTime)/1000.0 + ") second,foryou core run time(" + (foryouCoreEndTime + endTime - foryouCoreStartTime - startTime)/1000.0 + ") second,business run time(" + (foryouCoreStartTime - foryouCoreEndTime)/1000.0 + ") second");
 	}
 
 	/**
