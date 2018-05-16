@@ -32,6 +32,11 @@ public class ControllerPrototype {
 	 * String 
 	 */
 	public Map<String, ControllerMethod> methodMap;
+	
+	/**
+	 * 控制器类下的service、business自动注入
+	 */
+	public Map<String,Object> serviceMap;
 
 	public String getControllerClassPath() {
 		return controllerClassPath;
@@ -65,4 +70,12 @@ public class ControllerPrototype {
 		this.methodMap = methodMap;
 	}
 
+	public Map<String, Object> getServiceMap() {
+		return serviceMap;
+	}
+
+	public void setServiceMap(Map<String, Object> serviceMap) {
+		this.serviceMap = serviceMap;
+	}
+	
 }

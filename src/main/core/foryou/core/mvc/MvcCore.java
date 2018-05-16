@@ -35,6 +35,7 @@ import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import foryou.core.annotation.Autowired;
 import foryou.core.annotation.ClassMapingUrl;
 import foryou.core.annotation.IgnoreField;
 import foryou.core.annotation.InterceptorByClass;
@@ -104,8 +105,10 @@ public class MvcCore {
 	 * @param controllerName 控制器名称
 	 * @param classPath 类路径
 	 * @param targetClass targetClass
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
 	 */
-	private static void putControllerPrototypeMap(String controllerName, String classPath, Class<?> targetClass) {
+	private static void putControllerPrototypeMap(String controllerName, String classPath, Class<?> targetClass) throws InstantiationException, IllegalAccessException {
 		if (!targetClass.isAnnotationPresent(ClassMapingUrl.class)) {
 			return;
 		}
@@ -117,7 +120,11 @@ public class MvcCore {
 		controllerPrototype.setControllerClassPath(classPath);
 		System.out.println("Create Controller Url Mapping[" + classPath + "]...");
 		StringBuilder fieldNames = new StringBuilder("[");
-		controllerPrototype.setFieldMap(getControllerFieldMap(new ConcurrentHashMap<String, Field>(), targetClass, new ArrayList<String>(), fieldNames));
+		Map<String, Field> fieldMap = new ConcurrentHashMap<String, Field>();
+		Map<String,Object> serviceMap = new ConcurrentHashMap<String, Object>();
+		putControllerFieldServiceMap(fieldMap,serviceMap,targetClass, new ArrayList<String>(), fieldNames);
+		controllerPrototype.setFieldMap(fieldMap);
+		controllerPrototype.setServiceMap(serviceMap);
 		System.out.println("Create Controller Field Import" + fieldNames.toString() + "]...");
 		Method[] methods = targetClass.getMethods();
 		Map<String, ControllerMethod> methodMap = new ConcurrentHashMap<String, ControllerMethod>();
@@ -148,15 +155,17 @@ public class MvcCore {
 	}
 
 	/**
-	 * 获取控制器中的所有属性
+	 * 获取控制器中的所有的公共属性
 	 * 
 	 * @param fieldMap 属性集合
 	 * @param targetClass targetClass
 	 * @param rootFieldNameList 根属性list
 	 * @param fieldNames 属性名称
 	 * @return 集合
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
 	 */
-	private static Map<String, Field> getControllerFieldMap(Map<String, Field> fieldMap, Class<?> targetClass, List<String> rootFieldNameList, StringBuilder fieldNames) {
+	private static void putControllerFieldServiceMap(Map<String, Field> fieldMap, Map<String,Object> serviceMap, Class<?> targetClass, List<String> rootFieldNameList, StringBuilder fieldNames) throws InstantiationException, IllegalAccessException {
 		List<Field> fields = concat(targetClass.getFields(), targetClass.getDeclaredFields());
 		String ignoreFieldNames = "";
 		if (targetClass.isAnnotationPresent(IgnoreField.class)) {
@@ -167,9 +176,15 @@ public class MvcCore {
 			if (Modifier.isFinal(field.getModifiers()) || Modifier.isStatic(field.getModifiers()) || field.isAnnotationPresent(IgnoreField.class) || ignoreFieldNames.contains(field.getName())) {
 				continue;
 			}
+			if (field.isAnnotationPresent(Autowired.class)) {
+				serviceMap.put(field.getName(), field.getType().newInstance());
+				fieldMap.put(field.getName(), field);
+				fieldNames.append(field.getName() + ",");
+				continue;
+			}
 			if (field.getType().getClassLoader() != null) {
 				rootFieldNameList.add(field.getName());
-				getControllerFieldMap(fieldMap, field.getType(), rootFieldNameList, fieldNames);
+				putControllerFieldServiceMap(fieldMap, serviceMap, field.getType(), rootFieldNameList, fieldNames);
 			}
 			if (rootFieldNameList.size() < 1) {
 				fieldMap.put(field.getName(), field);
@@ -184,7 +199,6 @@ public class MvcCore {
 			}
 		}
 		rootFieldNameList.clear();
-		return fieldMap;
 	}
 	
 	public static Map<String, Class<?>> getMethodParamterTypeMap(Method method) {
@@ -467,8 +481,13 @@ public class MvcCore {
 	 * @param fieldValueMap fieldValueMap
 	 * @throws Exception 异常
 	 */
-	public static void controllerFieldInject(Object controller, Map<String, Field> fieldMap, Map<String, String[]> fieldValueMap) throws Exception {
+	public static void controllerFieldInject(Object controller, Map<String, Field> fieldMap, Map<String, Object> serviceMap, Map<String, String[]> fieldValueMap) throws Exception {
 		String fieldNotFind = "";
+		for (Map.Entry<String, Object> entry : serviceMap.entrySet()) {
+			Field serviceField = fieldMap.get(entry.getKey());
+			serviceField.setAccessible(true);
+			serviceField.set(controller, entry.getValue());
+		}
 		for (Map.Entry<String, String[]> entry : fieldValueMap.entrySet()) {
 			if (!fieldMap.containsKey(entry.getKey())) {
 				fieldNotFind += entry.getKey() + "|";
@@ -551,7 +570,7 @@ public class MvcCore {
 		((BaseController) controller).session = (request.getSession());
 		((BaseController) controller).servletContext = (request.getSession().getServletContext());
 		((BaseController) controller).ip = (ip);
-		MvcCore.controllerFieldInject(controller, controllerPrototype.getFieldMap(), request.getParameterMap());
+		MvcCore.controllerFieldInject(controller, controllerPrototype.getFieldMap(),controllerPrototype.getServiceMap(), request.getParameterMap());
 		return controller;
 	}
 
