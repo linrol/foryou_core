@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 import foryou.core.base.BaseController;
 import foryou.core.entity.ControllerMethod;
@@ -28,11 +27,10 @@ import foryou.core.mvc.MvcCore;
  */
 public class RequestDispatcherFilter implements Filter {
 	
-	private Logger logger;
-
+	private Logger logger = Logger.getLogger(this.getClass());
+	
 	public void init(FilterConfig filterConfig) throws ServletException {
-		PropertyConfigurator.configure(this.getClass().getClassLoader().getResource("log4j.foryou.core.properties"));
-		logger = Logger.getLogger(this.getClass());
+		
 	}
 	
 	public void destroy() {

@@ -31,7 +31,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 
 import com.google.common.util.concurrent.RateLimiter;
@@ -56,12 +55,7 @@ import foryou.core.util.StringUtil;
  */
 public class MvcCore {
 	
-	private static Logger logger;
-	
-	static {
-		PropertyConfigurator.configure(MvcCore.class.getClassLoader().getResource("log4j.foryou.core.properties"));
-		logger = Logger.getLogger(MvcCore.class);
-	}
+	private static Logger logger = Logger.getLogger(MvcCore.class);
 	
 	public static String SCAN_PACKAGE_KEY = "controller-scan-package";
 	public static String CONTROLLER_PATTERN_KEY = "controller-url-pattern";
