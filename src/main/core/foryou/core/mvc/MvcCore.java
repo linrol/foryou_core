@@ -53,7 +53,7 @@ import foryou.core.util.StringUtil;
  *
  */
 public class MvcCore {
-
+	
 	public static String SCAN_PACKAGE_KEY = "controller-scan-package";
 	public static String CONTROLLER_PATTERN_KEY = "controller-url-pattern";
 	public static String CONTROLLER_INTERCEPTOR_KEY = "controller-default-interceptor";
@@ -340,7 +340,7 @@ public class MvcCore {
 	public static String invokeMethod(Object obAction, ControllerMethod controllerMethod, Map<String, String[]> httpRequestMap) throws IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException {
 		BaseController controller = (BaseController) obAction;
 		double acquire = limiter.acquire();
-        System.out.println("get the Rate limiter token success! consume = " + acquire);
+        System.out.println("get the Rate limiter token success! waiting time: " + acquire + "s");
 		try {
 			if (controllerMethod.getMethodSynchronized()) {
 				synchronized (BaseController.class) {
