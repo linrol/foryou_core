@@ -99,10 +99,10 @@ public class MvcCore {
 
 	/**
 	 * 初始化mvc容器，加载controller相关的信息
-	 * @param folder
-	 * @param packageName
-	 * @param scanPackages
-	 * @throws Exception
+	 * @param folder 文件路径
+	 * @param packageName 包名
+	 * @param scanPackages 扫描的包
+	 * @throws Exception 异常信息
 	 */
 	public static void initMvc(File folder, String packageName, String[] scanPackages) throws Exception {
 		File[] files = folder.listFiles();
