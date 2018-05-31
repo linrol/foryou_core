@@ -46,7 +46,7 @@ public class RequestDispatcherFilter implements Filter {
 		HttpServletResponse response = (HttpServletResponse) resp;
 		String[] paraseUrl;
 		try {
-			paraseUrl = MvcCore.paraseUrl(request.getRequestURL().toString(), MvcCore.CONTROLLER_PATTERN_KEY);
+			paraseUrl = MvcCore.paraseUrl(request.getRequestURL().toString());
 		} catch (Exception eCheckUrl) {
 			eCheckUrl.printStackTrace();
 			response.getWriter().write(eCheckUrl.getMessage());

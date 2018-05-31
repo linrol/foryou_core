@@ -1,6 +1,5 @@
 package foryou.core.mvc;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +22,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -54,23 +54,56 @@ import foryou.core.util.StringUtil;
  *
  */
 public class MvcCore {
-	
+
 	private static Logger logger = Logger.getLogger(MvcCore.class);
-	
-	public static String SCAN_PACKAGE_KEY = "controller-scan-package";
-	public static String CONTROLLER_PATTERN_KEY = "controller-url-pattern";
-	public static String CONTROLLER_INTERCEPTOR_KEY = "controller-default-interceptor";
-	
-	public static String CONTROLLER_PATTERN_VALUE = getMvcProperties(CONTROLLER_PATTERN_KEY);
-	public static String CONTROLLER_INTERCEPTOR_VALUE = getMvcProperties(CONTROLLER_INTERCEPTOR_KEY);
-	public static String GSON_SERIALIZE_NULL_KEY = "gson-serializeNulls";
-	public static String GSON_SERIALIZE_NULL_KEY_VALUE = getMvcProperties(GSON_SERIALIZE_NULL_KEY);
-	
-	public static RateLimiter limiter = RateLimiter.create(Double.parseDouble(getMvcProperties("controller-rate-limiter"))) ;
+
+	private static Properties properties;
+
+	public static String CONTROLLER_PATTERN_VALUE = getProperties("controller-url-pattern");
+	public static String CONTROLLER_INTERCEPTOR_VALUE = getProperties("controller-default-interceptor");
+	public static String GSON_SERIALIZE_NULL_KEY_VALUE = getProperties("gson-serializeNulls");
+
+	public static RateLimiter limiter = RateLimiter.create(Double.parseDouble(getProperties("controller-rate-limiter")));
 
 	public static Map<String, ControllerPrototype> controllerPrototypeMap = new ConcurrentHashMap<String, ControllerPrototype>();
 	public static Map<String, Object> ControllerFieldRefMap = new ConcurrentHashMap<String, Object>();
 
+	/**
+	 * 初始化mvc.properties的配置并存入Properties中
+	 * 
+	 */
+	public static void initMvcProperties() {
+		String propInfo = "";
+		Properties prop = new Properties();
+		Properties defalutProp = new Properties();
+		try {
+			InputStream in = MvcCore.class.getClassLoader().getResourceAsStream("mvc.properties");
+			if (in != null) {
+				prop.load(new InputStreamReader(in, "UTF-8"));
+			}
+			InputStream defaultIn = MvcCore.class.getClassLoader().getResourceAsStream("mvc.default.properties");
+			defalutProp.load(new InputStreamReader(defaultIn, "UTF-8"));
+			for (String key : defalutProp.stringPropertyNames()) {
+				prop.putIfAbsent(key, defalutProp.getProperty(key));
+			}
+			for (String key : prop.stringPropertyNames()) {
+				propInfo += key + "=" + prop.getProperty(key) + ",";
+			}
+			logger.info("init the configuration ["+propInfo+"] from file:[mvc.properties,mvc.default.properties] success...");
+		} catch (IOException e) {
+			logger.error("error: loading the configuration file:[mvc.properties,mvc.default.properties],please check the file");
+			e.printStackTrace();
+		}
+		properties = prop;
+	}
+
+	/**
+	 * 初始化mvc容器，加载controller相关的信息
+	 * @param folder
+	 * @param packageName
+	 * @param scanPackages
+	 * @throws Exception
+	 */
 	public static void initMvc(File folder, String packageName, String[] scanPackages) throws Exception {
 		File[] files = folder.listFiles();
 		for (File file : files) {
@@ -93,15 +126,30 @@ public class MvcCore {
 			}
 		}
 	}
+	
+	/**
+	 * 根据key读取配置文件中的[mvc.properties,mvc.default.properties]配置
+	 * @param key
+	 * @return
+	 */
+	public static String getProperties(String key) {
+		if (properties == null) {
+			initMvcProperties();
+		}
+		return properties.getProperty(key);
+	}
 
 	/**
 	 * 获取Controller的原型信息，缓存到Map中
 	 * 
-	 * @param controllerName 控制器名称
-	 * @param classPath 类路径
-	 * @param targetClass targetClass
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
+	 * @param controllerName
+	 *            控制器名称
+	 * @param classPath
+	 *            类路径
+	 * @param targetClass
+	 *            targetClass
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
 	 */
 	private static void putControllerPrototypeMap(String controllerName, String classPath, Class<?> targetClass) throws InstantiationException, IllegalAccessException {
 		if (!targetClass.isAnnotationPresent(ClassMapingUrl.class)) {
@@ -116,8 +164,8 @@ public class MvcCore {
 		logger.info("create controller url mapping[" + classPath + "]...");
 		StringBuilder fieldNames = new StringBuilder("[");
 		Map<String, Field> fieldMap = new ConcurrentHashMap<String, Field>();
-		Map<String,Object> serviceMap = new ConcurrentHashMap<String, Object>();
-		putControllerFieldServiceMap(fieldMap,serviceMap,targetClass, new ArrayList<String>(), fieldNames);
+		Map<String, Object> serviceMap = new ConcurrentHashMap<String, Object>();
+		putControllerFieldServiceMap(fieldMap, serviceMap, targetClass, new ArrayList<String>(), fieldNames);
 		controllerPrototype.setFieldMap(fieldMap);
 		controllerPrototype.setServiceMap(serviceMap);
 		logger.info("create controller field import" + fieldNames.toString() + "]...");
@@ -152,15 +200,19 @@ public class MvcCore {
 	/**
 	 * 获取控制器中的所有的公共属性
 	 * 
-	 * @param fieldMap 属性集合
-	 * @param targetClass targetClass
-	 * @param rootFieldNameList 根属性list
-	 * @param fieldNames 属性名称
+	 * @param fieldMap
+	 *            属性集合
+	 * @param targetClass
+	 *            targetClass
+	 * @param rootFieldNameList
+	 *            根属性list
+	 * @param fieldNames
+	 *            属性名称
 	 * @return 集合
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
 	 */
-	private static void putControllerFieldServiceMap(Map<String, Field> fieldMap, Map<String,Object> serviceMap, Class<?> targetClass, List<String> rootFieldNameList, StringBuilder fieldNames) throws InstantiationException, IllegalAccessException {
+	private static void putControllerFieldServiceMap(Map<String, Field> fieldMap, Map<String, Object> serviceMap, Class<?> targetClass, List<String> rootFieldNameList, StringBuilder fieldNames) throws InstantiationException, IllegalAccessException {
 		List<Field> fields = concat(targetClass.getFields(), targetClass.getDeclaredFields());
 		String ignoreFieldNames = "";
 		if (targetClass.isAnnotationPresent(IgnoreField.class)) {
@@ -195,16 +247,16 @@ public class MvcCore {
 		}
 		rootFieldNameList.clear();
 	}
-	
+
 	public static Map<String, Class<?>> getMethodParamterTypeMap(Method method) {
 		Map<String, Class<?>> paramterTypeMap = new LinkedHashMap<String, Class<?>>();
 		LocalVariableTableParameterNameDiscoverer localVariableTableParameterNameDiscoverer = new LocalVariableTableParameterNameDiscoverer();
 		String[] paramterNames = localVariableTableParameterNameDiscoverer.getParameterNames(method);
 		Class<?>[] paramterTypes = method.getParameterTypes();
-		if(paramterNames == null || paramterTypes == null || paramterNames.length < 1 || paramterTypes.length < 1) {
+		if (paramterNames == null || paramterTypes == null || paramterNames.length < 1 || paramterTypes.length < 1) {
 			return paramterTypeMap;
 		}
-		for(int i = 0;i<paramterNames.length;i++){
+		for (int i = 0; i < paramterNames.length; i++) {
 			paramterTypeMap.put(paramterNames[i], paramterTypes[i]);
 		}
 		return paramterTypeMap;
@@ -213,10 +265,12 @@ public class MvcCore {
 	/**
 	 * 数组链接并去重操作
 	 * 
-	 * @param first 第一个数组
-	 * @param second 第二个数组
+	 * @param first
+	 *            第一个数组
+	 * @param second
+	 *            第二个数组
 	 * @return 数组
- 	 */
+	 */
 	private static <T> List<T> concat(T[] first, T[] second) {
 		List<T> list = new ArrayList<T>(first.length + second.length);
 		list.addAll(Arrays.asList(first));
@@ -228,83 +282,16 @@ public class MvcCore {
 	}
 
 	/**
-	 * 获取mvc.properties的配置并存入MvcPropertiesMap中
-	 * @param key 键
-	 * @return String
-	 */
-	public static String getMvcProperties(String key) {
-		String value = null;
-		InputStreamReader inputStreamReader = null;
-		String str = null;
-		try {
-			InputStream is = MvcCore.class.getResourceAsStream("/mvc.properties");
-			// 获取并返回默认配置
-			if (is == null) {
-				return getMvcDefaultProperties(key);
-			}
-			inputStreamReader = new InputStreamReader(is);
-			BufferedReader reader = new BufferedReader(inputStreamReader);
-			while ((str = reader.readLine()) != null) {
-				String[] splitParam = str.split(":");
-				if (key.equals(splitParam[0])) {
-					value = splitParam[1];
-					break;
-				}
-			}
-			reader.close();
-			inputStreamReader.close();
-		} catch (Exception e) {
-			logger.error("error: loading the configuration file:[mvc.properties],please check the file");
-			e.printStackTrace();
-		}
-		value = value == null ? getMvcDefaultProperties(key) : value;
-		if (value == null) {
-			logger.error("error: the configuration file[mvc.properties,mvc.default.properties] not found key:" + key);
-		}
-		return value;
-	}
-
-	/**
-	 * 获取mvc.default.properties的默认配置并存入MvcPropertiesMap中
-	 * @param key 键
-	 * @return 配置信息
-	 */
-	public static String getMvcDefaultProperties(String key) {
-		String value = null;
-		InputStreamReader inputStreamReader = null;
-		String str = null;
-		try {
-			InputStream is = MvcCore.class.getResourceAsStream("/mvc.default.properties");
-			inputStreamReader = new InputStreamReader(is);
-			BufferedReader reader = new BufferedReader(inputStreamReader);
-			while ((str = reader.readLine()) != null) {
-				String[] splitParam = str.split(":");
-				if (key.equals(splitParam[0])) {
-					value = splitParam[1];
-					break;
-				}
-			}
-			reader.close();
-			inputStreamReader.close();
-		} catch (Exception e) {
-			logger.error("error: loading the configuration file:[mvc.properties],please check the file");
-			e.printStackTrace();
-		}
-		if (value == null) {
-			logger.error("error: the configuration file[mvc.properties,mvc.default.properties] not found key:" + key);
-		}
-		return value;
-	}
-
-	/**
 	 * 
-	 * @param uri uri
-	 * @param controllerPatternKey controllerPatternKey
+	 * @param uri
+	 *            uri
+	 * @param controllerPatternKey
+	 *            controllerPatternKey
 	 * @return 字符串数组
-	 * @throws Exception 异常
+	 * @throws Exception
+	 *             异常
 	 */
-	public static String[] paraseUrl(String uri, String controllerPatternKey) throws Exception {
-		CONTROLLER_PATTERN_VALUE = CONTROLLER_PATTERN_VALUE == null ? MvcCore.getMvcProperties(controllerPatternKey) : CONTROLLER_PATTERN_VALUE;
+	public static String[] paraseUrl(String uri) throws Exception {
 		if (uri.indexOf(CONTROLLER_PATTERN_VALUE) == -1) {
 			logger.error("request " + uri + " is not such as " + CONTROLLER_PATTERN_VALUE + "controller/method...");
 			throw new Exception("request " + uri + " is not such as " + CONTROLLER_PATTERN_VALUE + "controller/method...");
@@ -319,26 +306,34 @@ public class MvcCore {
 
 	/**
 	 * Controller控制器的Java反射方法调用
-	 * @param obAction obAction
-	 * @param controllerMethod controllerMethod
-	 * @param httpRequestMap httpRequestMap
+	 * 
+	 * @param obAction
+	 *            obAction
+	 * @param controllerMethod
+	 *            controllerMethod
+	 * @param httpRequestMap
+	 *            httpRequestMap
 	 * @return 结果
-	 * @throws IllegalAccessException IllegalAccessException
-	 * @throws NoSuchMethodException NoSuchMethodException
-	 * @throws SecurityException SecurityException
-	 * @throws IllegalArgumentException IllegalArgumentException
+	 * @throws IllegalAccessException
+	 *             IllegalAccessException
+	 * @throws NoSuchMethodException
+	 *             NoSuchMethodException
+	 * @throws SecurityException
+	 *             SecurityException
+	 * @throws IllegalArgumentException
+	 *             IllegalArgumentException
 	 */
 	public static String invokeMethod(Object obAction, ControllerMethod controllerMethod, Map<String, String[]> httpRequestMap) throws IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException {
 		BaseController controller = (BaseController) obAction;
 		double acquire = limiter.acquire();
-        logger.info("request get rate limiter token success! waiting time(" + acquire + ") second");
+		logger.info("request get rate limiter token success! waiting time(" + acquire + ") second");
 		try {
 			if (controllerMethod.getMethodSynchronized()) {
 				synchronized (BaseController.class) {
-					return controllerMethod.getParameterTypeMap().size() < 1 ? (String) controllerMethod.getMethod().invoke(controller):(String) controllerMethod.getMethod().invoke(controller, getMethodInvokeParameters(httpRequestMap, controllerMethod.getParameterTypeMap()));
+					return controllerMethod.getParameterTypeMap().size() < 1 ? (String) controllerMethod.getMethod().invoke(controller) : (String) controllerMethod.getMethod().invoke(controller, getMethodInvokeParameters(httpRequestMap, controllerMethod.getParameterTypeMap()));
 				}
 			}
-			return controllerMethod.getParameterTypeMap().size() < 1 ? (String) controllerMethod.getMethod().invoke(controller):(String) controllerMethod.getMethod().invoke(controller, getMethodInvokeParameters(httpRequestMap, controllerMethod.getParameterTypeMap()));
+			return controllerMethod.getParameterTypeMap().size() < 1 ? (String) controllerMethod.getMethod().invoke(controller) : (String) controllerMethod.getMethod().invoke(controller, getMethodInvokeParameters(httpRequestMap, controllerMethod.getParameterTypeMap()));
 		} catch (InvocationTargetException e) {
 			e.getTargetException().printStackTrace();
 			return getExceptionAllinformation(e);
@@ -351,10 +346,13 @@ public class MvcCore {
 	/**
 	 * 获取反射调用方法需要传递的参数
 	 * 
-	 * @param paramterMap paramterMap
-	 * @param parameterTypeMap parameterTypeMap
+	 * @param paramterMap
+	 *            paramterMap
+	 * @param parameterTypeMap
+	 *            parameterTypeMap
 	 * @return 数组
-	 * @throws Exception Exception
+	 * @throws Exception
+	 *             Exception
 	 */
 	public static Object[] getMethodInvokeParameters(Map<String, String[]> paramterMap, Map<String, Class<?>> parameterTypeMap) throws Exception {
 		if (parameterTypeMap.size() < 1) {
@@ -387,10 +385,13 @@ public class MvcCore {
 	/**
 	 * 注入方法参数值得类型转换
 	 * 
-	 * @param parameterType parameterType
-	 * @param parameterValue parameterValue
+	 * @param parameterType
+	 *            parameterType
+	 * @param parameterValue
+	 *            parameterValue
 	 * @return return
-	 * @throws ParseException ParseException
+	 * @throws ParseException
+	 *             ParseException
 	 */
 	private static Object convertParameter(String[] requestParamters, Class<?> fieldClazz) throws ParseException {
 		if (requestParamters == null || StringUtil.isEmpty(requestParamters[0])) {
@@ -425,9 +426,11 @@ public class MvcCore {
 	/**
 	 * 判断是否为基础类型数据
 	 * 
-	 * @param clazz clazz
+	 * @param clazz
+	 *            clazz
 	 * @return return
-	 * @throws Exception Exception
+	 * @throws Exception
+	 *             Exception
 	 */
 	private static boolean isBaseDataType(Class<?> clazz) throws Exception {
 		return (clazz.equals(String.class) || clazz.equals(String[].class) || clazz.equals(Integer.class) || clazz.equals(Integer[].class) || clazz.equals(Byte.class) || clazz.equals(Byte[].class) || clazz.equals(Long.class) || clazz.equals(Long[].class) || clazz.equals(Double.class) || clazz.equals(Double[].class) || clazz.equals(Float.class) || clazz.equals(Float[].class) || clazz.equals(Character.class) || clazz.equals(Character[].class) || clazz.equals(Short.class) || clazz.equals(Short[].class) || clazz.equals(BigDecimal.class) || clazz.equals(BigDecimal[].class) || clazz.equals(BigInteger.class) || clazz.equals(BigInteger[].class) || clazz.equals(Boolean.class) || clazz.equals(Boolean[].class) || clazz.equals(Date.class) || clazz.equals(Date[].class) || clazz.isPrimitive());
@@ -436,7 +439,8 @@ public class MvcCore {
 	/**
 	 * 获取基础数据类型默认值
 	 * 
-	 * @param clazz clazz
+	 * @param clazz
+	 *            clazz
 	 * @return return
 	 */
 	private static Object getDefaultValue(Class<?> clazz) {
@@ -473,10 +477,15 @@ public class MvcCore {
 
 	/**
 	 * 控制器的属性注入，不依赖get/set,但需要使用公共属性public
-	 * @param controller controller
-	 * @param fieldMap fieldMap
-	 * @param fieldValueMap fieldValueMap
-	 * @throws Exception 异常
+	 * 
+	 * @param controller
+	 *            controller
+	 * @param fieldMap
+	 *            fieldMap
+	 * @param fieldValueMap
+	 *            fieldValueMap
+	 * @throws Exception
+	 *             异常
 	 */
 	public static void controllerFieldInject(Object controller, Map<String, Field> fieldMap, Map<String, Object> serviceMap, Map<String, String[]> fieldValueMap) throws Exception {
 		String fieldNotFind = "";
@@ -500,14 +509,23 @@ public class MvcCore {
 
 	/**
 	 * 属性注入 getField是可以获取到父类的共有字段的， getDeclaredField只能获取本类所有字段
-	 * @param controller controller
-	 * @param rootField rootField
-	 * @param subField subField
-	 * @param fieldValues fieldValues
-	 * @throws InstantiationException InstantiationException
-	 * @throws IllegalAccessException IllegalAccessException
-	 * @throws IllegalArgumentException IllegalArgumentException
-	 * @throws ParseException ParseException
+	 * 
+	 * @param controller
+	 *            controller
+	 * @param rootField
+	 *            rootField
+	 * @param subField
+	 *            subField
+	 * @param fieldValues
+	 *            fieldValues
+	 * @throws InstantiationException
+	 *             InstantiationException
+	 * @throws IllegalAccessException
+	 *             IllegalAccessException
+	 * @throws IllegalArgumentException
+	 *             IllegalArgumentException
+	 * @throws ParseException
+	 *             ParseException
 	 */
 	public static void fieldInject(Object controller, Field rootField, Field subField, String[] fieldValues) throws InstantiationException, IllegalAccessException, IllegalArgumentException, ParseException {
 		subField.setAccessible(true);
@@ -551,11 +569,16 @@ public class MvcCore {
 
 	/**
 	 * 前端控制器(RequestDispatcherFilter)对控制器进行初始化操作
-	 * @param controllerPrototype controllerPrototype
-	 * @param request request
-	 * @param response response
+	 * 
+	 * @param controllerPrototype
+	 *            controllerPrototype
+	 * @param request
+	 *            request
+	 * @param response
+	 *            response
 	 * @return controller
-	 * @throws Exception Exception
+	 * @throws Exception
+	 *             Exception
 	 */
 	@SuppressWarnings("unchecked")
 	public static Object initController(ControllerPrototype controllerPrototype, HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -567,21 +590,27 @@ public class MvcCore {
 		((BaseController) controller).session = (request.getSession());
 		((BaseController) controller).servletContext = (request.getSession().getServletContext());
 		((BaseController) controller).ip = (ip);
-		MvcCore.controllerFieldInject(controller, controllerPrototype.getFieldMap(),controllerPrototype.getServiceMap(), request.getParameterMap());
+		MvcCore.controllerFieldInject(controller, controllerPrototype.getFieldMap(), controllerPrototype.getServiceMap(), request.getParameterMap());
 		return controller;
 	}
 
 	/**
 	 * response请求后返回结果处理
-	 * @param result result
-	 * @param controller controller
-	 * @param request request
-	 * @param response response
-	 * @throws IOException IOException
-	 * @throws ServletException ServletException
+	 * 
+	 * @param result
+	 *            result
+	 * @param controller
+	 *            controller
+	 * @param request
+	 *            request
+	 * @param response
+	 *            response
+	 * @throws IOException
+	 *             IOException
+	 * @throws ServletException
+	 *             ServletException
 	 */
 	public static void resultProcess(String result, Object controller, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-		GSON_SERIALIZE_NULL_KEY_VALUE = GSON_SERIALIZE_NULL_KEY_VALUE == null ? MvcCore.getMvcProperties(GSON_SERIALIZE_NULL_KEY) : GSON_SERIALIZE_NULL_KEY_VALUE;
 		Gson gson = null;
 		if (GSON_SERIALIZE_NULL_KEY_VALUE.equals("null")) {
 			gson = new GsonBuilder().serializeNulls().setDateFormat("yyyy-MM-dd HH:mm:ss").create();

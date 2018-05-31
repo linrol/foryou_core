@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.alinkeji</groupId>
 	<artifactId>foryou_core</artifactId>
-	<version>1.1.7</version>
+	<version>1.1.8</version>
 	<name>foryou_core maven webapp</name>
 	<description>foryou_core mvc 组件</description>
 	<url>http://maven.apache.org</url>
