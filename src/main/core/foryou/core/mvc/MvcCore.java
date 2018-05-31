@@ -129,8 +129,8 @@ public class MvcCore {
 	
 	/**
 	 * 根据key读取配置文件中的[mvc.properties,mvc.default.properties]配置
-	 * @param key
-	 * @return
+	 * @param key 键
+	 * @return 值
 	 */
 	public static String getProperties(String key) {
 		if (properties == null) {
@@ -283,13 +283,9 @@ public class MvcCore {
 
 	/**
 	 * 
-	 * @param uri
-	 *            uri
-	 * @param controllerPatternKey
-	 *            controllerPatternKey
+	 * @param uri 请求url
 	 * @return 字符串数组
-	 * @throws Exception
-	 *             异常
+	 * @throws Exception 异常
 	 */
 	public static String[] paraseUrl(String uri) throws Exception {
 		if (uri.indexOf(CONTROLLER_PATTERN_VALUE) == -1) {
