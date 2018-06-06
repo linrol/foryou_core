@@ -55,12 +55,6 @@
             <version>${log4j.version}</version>
         </dependency>
         
-        <dependency>
-            <groupId>com.alinkeji.foryou</groupId>
-            <artifactId>foryou-base</artifactId>
-            <version>1.0.0-20180605</version>
-        </dependency>
-
 	</dependencies>
 
 	<build>
