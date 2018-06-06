@@ -154,7 +154,7 @@ public class MvcCore {
 					}
 					if (scanPackage != null && fileName.endsWith(".class") && fileName.replace("/", ".").contains(scanPackage)) {
 						String classPath = fileName.replace("/", ".").replace(".class", "");
-						String controllerName = classPath.substring(classPath.lastIndexOf("."));
+						String controllerName = classPath.substring(classPath.lastIndexOf(".") + 1);
 						logger.info("init controller [" + classPath + "]");
 						Class<?> targetClass = Class.forName(classPath);
 						putControllerPrototypeMap(controllerName, classPath, targetClass);
