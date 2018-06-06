@@ -43,7 +43,7 @@ public class InitMvc implements ServletContextListener {
 	 */
 	private void classesInit(){
 		File root = new File(this.getClass().getClassLoader().getResource("/").getPath());
-		System.out.println("Init Foryou Mvc Classes Controller ....");
+		System.out.println("Init foryou mvc classes controller ....");
 		try {
 			MvcCore.initMvc(root, "", MvcCore.getProperties("controller-scan-package").split(","));
 		} catch (Exception e) {
@@ -56,7 +56,7 @@ public class InitMvc implements ServletContextListener {
 	 * @param containJarNames
 	 */
 	private void libInit(String containJarNames){
-		System.out.println("Init Foryou Mvc Controller Contain JarNames["+containJarNames+"]....");
+		System.out.println("Init foryou mvc controller contain libs["+containJarNames+"]....");
 		try {
 			List<String> jarPathList = getJarPaths(new File(Thread.currentThread().getContextClassLoader().getResource("/").getPath()).getParentFile(),containJarNames.split(","),new ArrayList<String>());
 			MvcCore.initMvc(jarPathList, MvcCore.getProperties("controller-scan-package").split(","));
