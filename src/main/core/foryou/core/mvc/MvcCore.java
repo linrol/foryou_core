@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -25,6 +26,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -124,6 +127,41 @@ public class MvcCore {
 					putControllerPrototypeMap(controllerName, classPath, targetClass);
 				}
 			}
+		}
+	}
+	
+	/**
+	 * 初始化mvc容器，加载controller类
+	 * @param jarPath 待扫描的jar文件路径
+	 * @param scanPackages 待扫描的包路径
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
+	 * @throws IOException 
+	 * @throws ClassNotFoundException 
+	 */
+	public static void initMvc(List<String> jarPathList,String... scanPackages) throws InstantiationException, IllegalAccessException, IOException, ClassNotFoundException{
+		for(String jarPath:jarPathList) {
+			JarFile jarFile = new JarFile(jarPath);
+			Enumeration<JarEntry> ee = jarFile.entries();
+			while (ee.hasMoreElements()) {
+				JarEntry entry = (JarEntry) ee.nextElement();
+				// 过滤我们出满足我们需求的东西
+				String fileName = entry.getName();
+				for (String scanPackage : scanPackages) {
+					boolean isAsterisk = scanPackage.length() > 0 && ("*".equals(scanPackage.substring(scanPackage.length() - 1, scanPackage.length())) || "*".equals(scanPackage.substring(0, 1)));
+					if (isAsterisk) {
+						scanPackage = scanPackage.replace("*", "");
+					}
+					if (scanPackage != null && fileName.endsWith(".class") && fileName.replace("/", ".").contains(scanPackage)) {
+						String classPath = fileName.replace("/", ".").replace(".class", "");
+						String controllerName = classPath.substring(classPath.lastIndexOf("."));
+						logger.info("init controller [" + classPath + "]");
+						Class<?> targetClass = Class.forName(classPath);
+						putControllerPrototypeMap(controllerName, classPath, targetClass);
+					}
+				}
+			}
+			jarFile.close();
 		}
 	}
 	

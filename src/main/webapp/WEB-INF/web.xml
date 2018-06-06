@@ -5,27 +5,37 @@
 	id="WebApp_ID" version="2.5">
 	<display-name>foryou_platform</display-name>
 	<welcome-file-list>
-		<welcome-file>index.html</welcome-file>
+	   <welcome-file>index.html</welcome-file>
 	</welcome-file-list>
 	<login-config>
-		<auth-method>BASIC</auth-method>
+	   <auth-method>BASIC</auth-method>
 	</login-config>
 	<session-config>
-		<session-timeout>180</session-timeout>
+	   <session-timeout>180</session-timeout>
 	</session-config>
+	
+	<context-param>
+	   <!-- 加载controller class源码的来源：classes:读取、lib:lib下的jar包读取,默认未配置通过classes -->
+	   <param-name>loadType</param-name>
+       <param-value>classes</param-value>
+	   <param-name>containJarNames</param-name>
+	   <param-value>foryou</param-value>
+	</context-param>
 	<listener>
-		<listener-class>foryou.core.listener.InitMvc</listener-class>
+	   <listener-class>foryou.core.listener.InitMvc</listener-class>
 	</listener>
+	
 	<filter>
-		<filter-name>foryou</filter-name>
-		<filter-class>foryou.core.filter.RequestDispatcherFilter</filter-class>
+	   <filter-name>foryou</filter-name>
+	   <filter-class>foryou.core.filter.RequestDispatcherFilter</filter-class>
 	</filter>
 	<filter-mapping>
-		<filter-name>foryou</filter-name>
-		<url-pattern>*.php</url-pattern>
+	   <filter-name>foryou</filter-name>
+	   <url-pattern>*.php</url-pattern>
 	</filter-mapping>
+	
 	<error-page>
-		<error-code>404</error-code>
-		<location>/Error/404.htm</location>
+	   <error-code>404</error-code>
+	   <location>/Error/404.htm</location>
 	</error-page>
 </web-app>
