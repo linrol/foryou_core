@@ -55,6 +55,13 @@
             <version>${log4j.version}</version>
         </dependency>
         
+        <!-- redis客户端操场jedis -->
+        <dependency>
+            <groupId>redis.clients</groupId>
+		    <artifactId>jedis</artifactId>
+		    <version>2.9.0</version>
+        </dependency>
+        
 	</dependencies>
 
 	<build>
