@@ -74,6 +74,7 @@ public class DistributedRedisLock {
 			// 防止一直消耗 CPU
 			Thread.sleep(100);
 		}
+		
 	}
 
 	/**
@@ -120,5 +121,5 @@ public class DistributedRedisLock {
 		}
 		return false;
 	}
-
+	
 }
